@@ -1,34 +1,51 @@
 ---
 description: Update the hp-wp plugin to the latest version from the marketplace.
-allowed-tools: Bash(claude:*), Bash(cat:*), Bash(curl:*), Read
+allowed-tools: Read, Bash(curl:*)
 ---
 
-Update the hp-wp plugin from its registered marketplace.
+Update the hp-wp plugin from the registered marketplace.
 
-## Step 1 — show current version
+## Steps
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json 2>/dev/null | grep -o '"version"[^,}]*' | head -1`
+1. **Read the current installed version.** Use the Read tool on `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` to extract `version`.
 
-## Step 2 — check remote version
+2. **Read the runtime manifest.** Use the Read tool on `${CLAUDE_PLUGIN_ROOT}/manifest.json` to extract `marketplace_url` and `version_endpoint`.
 
-!`curl -fsSL --max-time 3 https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version 2>/dev/null || echo '{"version":"unreachable"}'`
+3. **Check the remote version.** Run via Bash:
+   ```
+   curl -fsSL --max-time 5 https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version
+   ```
 
-## Step 3 — refresh the marketplace and reinstall the plugin
+4. **Tell the user what to do.** The Claude Code-native flow is to run these three commands in order from inside Claude Code:
 
-The Claude Code-native flow is:
+   ```
+   /plugin marketplace update hp-wp
+   /plugin uninstall hp-wp@hp-wp
+   /plugin install hp-wp@hp-wp
+   ```
 
-```
-/plugin marketplace update hp-wp
-/plugin uninstall hp-wp@hp-wp
-/plugin install hp-wp@hp-wp
-```
+   After install, restart Claude Code so commands and hooks register.
 
-Tell the user to run those three commands in order. After install, restart Claude Code so new hooks and commands register.
+   If the user has not yet added the marketplace, they need this one-time command first:
 
-If the user has not yet added the marketplace, they need this one-time command first:
+   ```
+   /plugin marketplace add https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json
+   ```
 
-```
-/plugin marketplace add https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json
-```
+5. **Report.** Print a clean summary like:
 
-Read `${CLAUDE_PLUGIN_ROOT}/manifest.json` to confirm `marketplace_url` and report it to the user.
+   ```
+   hp-wp update
+   ────────────
+   Currently installed: 2.0.0
+   Available remotely:  2.0.1 (updated 2026-05-12)
+   Status:              update available
+
+   To install, paste these into Claude Code:
+     /plugin marketplace update hp-wp
+     /plugin uninstall hp-wp@hp-wp
+     /plugin install hp-wp@hp-wp
+   ```
+
+   If versions match, just print "Already on the latest version (X.Y.Z)" and stop.
+   If the server is unreachable, print "Cannot reach update server — network or DNS issue. Try again later."

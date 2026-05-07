@@ -322,6 +322,7 @@ Small fixed option will reduce width and allow to align cards container.
 - **image** (`image`) -> Key: `field_618122fd69f1a`
 - **** (`tab`) -> Key: `field_654a54267879d`
 - **background_color** (`button_group`) -> Key: `field_61dc46a7e6786` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
+- **decoration_color** (`button_group`) -> Key: `field_690b6a4c12e73` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **layout_width** (`button_group`) -> Key: `field_654a543c7879e` -> Choices: `fullwidth` | `boxed`
 - **image_ratio** (`button_group`) -> Key: `field_654a54657879f` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4`
 

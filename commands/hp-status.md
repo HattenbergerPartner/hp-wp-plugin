@@ -1,31 +1,36 @@
 ---
 description: Show installed hp-wp plugin version and check for updates from the WP server.
-allowed-tools: Read, Bash(curl:*), Bash(grep:*), Bash(date:*)
+allowed-tools: Read, Bash(curl:*)
 ---
 
 Report the installed hp-wp plugin version vs the latest version on the distribution server.
 
-## Local version
+Steps to perform:
 
-!`grep -o '"version"[^,}]*' ${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json | head -1`
+1. **Read the plugin manifest.** Use the Read tool on `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` to extract the local `version`.
 
-## Remote version
+2. **Read the runtime manifest.** Use the Read tool on `${CLAUDE_PLUGIN_ROOT}/manifest.json` to extract `version_endpoint` and `marketplace_url`.
 
-!`curl -fsSL --max-time 3 https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version 2>/dev/null || echo '{"version":"unreachable","updated_at":null}'`
+3. **Fetch the remote version.** Run via Bash:
+   ```
+   curl -fsSL --max-time 5 https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version
+   ```
+   If the request fails, treat the remote version as unreachable — do NOT error out.
 
-## Manifest snapshot
+4. **Compare and report.** Print this format exactly:
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/manifest.json 2>/dev/null`
+   ```
+   hp-wp plugin status
+   ───────────────────
+   Installed: <X.Y.Z>
+   Latest:    <X.Y.Z>  (updated <ISO date>)
+   Status:    up to date | update available | server unreachable | ahead of server
+   ```
 
-Print a clean comparison:
+5. If an update is available, append:
 
-```
-hp-wp plugin status
-───────────────────
-Installed: <X.Y.Z>
-Latest:    <X.Y.Z>  (updated <ISO date>)
-Status:    up to date | update available | server unreachable | ahead of server
-```
+   > Run `/hp-update` to install the latest version.
 
-If an update is available, append: **Run `/hp-update` to install.**
-If the server is unreachable, just print the local version and note the network failure (do NOT treat this as an error).
+   If the server was unreachable, append:
+
+   > Server check failed (network or DNS). Local version still valid.
