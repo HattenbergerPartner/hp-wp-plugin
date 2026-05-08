@@ -27,13 +27,13 @@ If pre-flight passed, run via Bash:
 node sync-acf-context.js --wp-env
 ```
 
-This pulls live ACF schemas, theme colors, and page patterns. The sync script writes to both `wp-page-builder/references/` (legacy) and `plugin/skills/generate-hp-wp-page/references/` (canonical) automatically.
+This pulls live ACF schemas, theme colors, and page patterns. The sync writes the auto-generated reference files (`acf-schemas.md`, `color-system.md`, `page-patterns.md`) directly into `plugin/skills/generate-hp-wp-page/references/`. Manual reference files (`module-config-guide.md`, `module-purpose-guide.md`, `few-shot-examples.md`) in that same directory are NOT touched — edit them directly when documentation changes.
 
 ## Post-sync reminder
 
 After the sync completes, tell the maintainer:
 
-1. Review the diff in `plugin/skills/generate-hp-wp-page/references/` (and `wp-page-builder/references/` mirror).
+1. Review the diff in `plugin/skills/generate-hp-wp-page/references/`.
 2. If references look right, bump the `version` field in **all four** of these files:
    - `plugin/.claude-plugin/plugin.json`
    - `plugin/.claude-plugin/marketplace.json` (the `plugins[0].version` field)
