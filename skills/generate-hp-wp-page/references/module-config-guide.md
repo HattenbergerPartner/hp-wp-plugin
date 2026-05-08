@@ -4,6 +4,62 @@ This guide documents the correct values and decision logic for ACF `button_group
 
 ---
 
+## JSON safety (read before generating any block)
+
+Three failure modes silently reduce ACF blocks to empty stubs (`<!-- wp:acf/<module> /-->` with no data) when published. Avoid all three.
+
+### 1. Field completeness — emit every schema field
+
+Every field declared in `acf-schemas.md` for the chosen module MUST appear in the block's `data`, with both the value key (`background_color`) and the mapping key (`_background_color`). Design fields like `background_color`, `text_color`, alignment selectors, `headline_tag_selector`, `first_item_open`, `accordion_position`, `variant`, `image_ratio`, etc. are NOT optional even when the briefing doesn't mention them — fall back to the schema's `Default` value or a sensible default from this guide. Gutenberg validates the block payload against the registered schema and drops it on mismatch.
+
+### 2. German typographic quotes — never mix `„` with ASCII `"`
+
+When generating German content, use typographic quotes:
+- Opening: `„` (U+201E, "low-9 quote")
+- Closing: `"` (U+201C, "left double quote")
+
+NEVER use ASCII `"` (U+0022) inside string content. The closing ASCII `"` will terminate the surrounding JSON string and corrupt the entire block.
+
+- Wrong: `"subline":"Im Rahmen des „BAFA" Programms"`
+- Right: `"subline":"Im Rahmen des „BAFA" Programms"`
+
+If straight ASCII quotes are unavoidable (e.g. for code samples), JSON-escape them as `\"`.
+
+### 3a. No `<p>` wrappers — let wpautop do its job
+
+Do NOT wrap content text in `<p>...</p>`. ACF wysiwyg fields run `wpautop()` at render time and convert plain text into paragraphs automatically. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug — eliminate it from every content / wysiwyg / textarea / repeater field.
+
+- Single paragraph: `"content":"Just plain text."` (no tags at all)
+- Multiple paragraphs: `"content":"First paragraph.\n\nSecond paragraph.\n\nThird paragraph."` — `\n\n` is two literal newlines in the JSON, which JSON encodes as `\n\n`. wpautop wraps each chunk as its own `<p>`.
+
+If you find yourself typing `<p>` in any content field, stop and remove it.
+
+### 3b. HTML escape for legitimate inline tags only
+
+Plain text and `\n\n` paragraphs need NO HTML at all. Only emit tags when the content genuinely requires inline semantics:
+- Bold / emphasis: `<strong>` / `<em>`
+- Bulleted / numbered lists: `<ul><li>...</li></ul>` / `<ol><li>...</li></ol>`
+- Inline links: `<a href="...">...</a>`
+- Hard line break inside a paragraph: `<br>`
+
+When you DO need a tag, every literal `<` MUST be `<` and every `>` MUST be `>` (Unicode escapes the JSON parser decodes back to `<`/`>`). This matches Gutenberg's native block serializer and survives the WP REST API content sanitizer on the `--draft` upload path.
+
+- Wrong: `"content":"<ul><li>Item one</li><li>Item two</li></ul>"`
+- Right: `"content":"<ul><li>Item one</li><li>Item two</li></ul>"`
+
+Plain text without HTML is unaffected by this rule.
+
+### Optional but recommended block envelope
+
+Match what the WP block editor produces when you save manually:
+- `"mode":"edit"` — already required.
+- `"anchor":"acf-block-<random-hex>"` — adds an HTML id for in-page linking.
+- `"metadata":{"name":"<headline>"}` — provides an outline label in the WP editor.
+
+These are not validated, but including them makes the saved blocks indistinguishable from editor-saved ones, which avoids edge-case re-serialization issues.
+
+---
+
 ## Heading Hierarchy (`headline_tag_selector`)
 
 **Rule: Only ONE `h1` per page. All other sections use `h2` or lower.**

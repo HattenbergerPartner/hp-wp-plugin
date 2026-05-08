@@ -1,6 +1,6 @@
 {
   "name": "hp-wp",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "source_url": "https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files",
   "marketplace_url": "https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json",
   "version_endpoint": "https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version",

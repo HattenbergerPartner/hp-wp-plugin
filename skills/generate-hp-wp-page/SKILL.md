@@ -111,6 +111,9 @@ For `button_group` fields, check the available `Choices` values in the schema. U
 > - Never use a key that is not perfectly mapped to a `field_` string in the schema.
 > - For `button_group` fields, only use values listed in the choices. If no choices are documented, refer to the color system or few-shot examples for valid values.
 
+> [!IMPORTANT] Field Completeness
+> Load **every field** declared by the schema for each chosen module — including design/layout fields (`background_color`, `text_color`, alignment selectors, `headline_tag_selector`, `first_item_open`, etc.). These are NOT optional. If the briefing doesn't specify a value, fill with the schema's `default_value` or a sensible default from `module-config-guide.md`. Omitting any schema field causes Gutenberg to drop the block silently — symptom is `<!-- wp:acf/<module> /-->` appearing in the published page with no data.
+
 ### Step 5: UX Pattern Validation
 **Execute a simulated filesystem read** of `./references/module-config-guide.md` (full document).
 
@@ -131,6 +134,31 @@ Generate the JSON payload for each module. Apply the configuration decisions:
 - Set alignment, image ratio, and variant fields according to the config guide.
 - For repeater fields, use the correct `{name}_{index}_{field}` syntax.
 - Include the repeater count field (e.g., `"cards":3`, `"teasers":3`).
+- **Use the matching example in `few-shot-examples.md` as a complete template for each module.** Do not remove fields the example shows, even if the briefing didn't mention them.
+
+> [!IMPORTANT] German typographic quotes
+> When generating German content, use typographic quotes: `„` (U+201E) opening + `"` (U+201C) closing. NEVER use ASCII `"` inside string content — the closing ASCII `"` will terminate the JSON string and break the block. Symptom: a single `„word"` pair somewhere in the page reduces multiple downstream blocks to empty stubs. If straight ASCII quotes are unavoidable, JSON-escape them as `\"`.
+
+> [!IMPORTANT] No `<p>` wrappers in content fields
+> Do NOT wrap text in `<p>...</p>` paragraphs. ACF wysiwyg fields run `wpautop()` at render time and convert plain text with blank-line separators (`\n\n`) into proper paragraphs automatically. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug.
+>
+> - Single paragraph: `"content":"Just plain text."` (no tags at all)
+> - Multiple paragraphs: `"content":"First paragraph.\n\nSecond paragraph.\n\nThird paragraph."` — `\n\n` is two literal newlines in the JSON string, which JSON encodes as `\n\n`. wpautop renders each chunk as its own `<p>`.
+>
+> This applies to every wysiwyg / textarea / repeater content field. Saves an entire class of escape errors.
+
+> [!IMPORTANT] HTML escape for legitimate inline tags
+> Plain text and `\n\n` paragraphs need NO HTML at all. Only emit tags when the content actually requires inline semantics:
+> - Bold / emphasis: `<strong>` / `<em>`
+> - Bulleted / numbered lists: `<ul><li>...</li></ul>` / `<ol><li>...</li></ol>`
+> - Inline links: `<a href="...">...</a>`
+> - Hard line break inside a paragraph: `<br>`
+>
+> When you DO need a tag, every literal `<` MUST be `<` and every `>` MUST be `>` (Unicode escapes that the JSON parser decodes back to `<`/`>`). Example:
+> - Wrong: `"content":"<ul><li>Item</li></ul>"`
+> - Right: `"content":"<ul><li>Item</li></ul>"`
+>
+> This matches Gutenberg's native block serializer and is required for the `--draft` upload path; raw `<`/`>` may survive a quick manual paste but is silently corrupted by the WP REST API content sanitizer.
 
 ### Step 7: Rigorous Verification
 Verify the generated output against ALL previous steps:
@@ -140,6 +168,10 @@ Verify the generated output against ALL previous steps:
 4. **Repeater syntax**: Are repeater items correctly indexed (`_0_`, `_1_`, `_2_`)? Is the count field present?
 5. **Required fields**: Does every block have `"name"`, `"data"`, and `"mode":"edit"`?
 6. **Module sequence**: Does the page flow logically? Is Contact near the end?
+7. **Field completeness**: Every field declared in `acf-schemas.md` for the chosen module is present in `data`, with both `name` and `_name` (mapping) keys. Especially the design/layout fields (`background_color`, `text_color`, alignment selectors, `headline_tag_selector`, `first_item_open`).
+8. **JSON quote safety**: Every string value's content is JSON-parseable. No raw ASCII `"` inside strings unless escaped as `\"`. Mixed German `„`/ASCII `"` pairs are forbidden.
+9. **HTML escape**: Every `<` and `>` inside any string value is emitted as `<` / `>`. Verify by grep — no raw `<p>`, `<strong>`, `<ul>`, `<li>`, `</`, etc. should appear inside the JSON portion of any block.
+10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery.
 
 ### Step 8: Output Formatting
 **Execute a simulated filesystem read** of `./references/few-shot-examples.md` to verify your JSON wrapping matches the exact syntax.
@@ -148,9 +180,27 @@ Your final output must consist exclusively of valid HTML comment structures wrap
 
 Each block is a SINGLE LINE — no line breaks inside the `<!-- wp:acf/modulename ... /-->` HTML comment.
 
+**Validate before delivery.** Pipe the assembled markup (without the surrounding ```html``` fence) through the validator:
+
+```
+printf '%s' "$RAW_MARKUP" | node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-blocks.mjs
+```
+
+The script returns JSON: `{ valid, blocks, errors, warnings, issues }`.
+
+- If `valid` is `true`: proceed to Step 9.
+- If `valid` is `false`: fix every issue with `severity: "error"` (each issue includes a `hint` with the exact field key and corrective action), regenerate the affected block(s), and re-run the validator. Cap at **2 retries**; on the third failure, surface the validator output to the user along with the partial markup so they can decide whether to paste manually anyway.
+
+`severity: "warn"` items (e.g. mixed `„`/ASCII quote pairs) should be addressed but do not block delivery.
+
 ### Step 9: Output Routing
 
-After Step 8 has rendered the markup, deliver it according to the output mode passed by the calling command (`clipboard`, `draft`, `both`, or `ask`).
+After Step 8 has rendered the markup AND the validator returned `valid: true`, deliver it according to the output mode passed by the calling command (`clipboard`, `draft`, `both`, or `ask`).
+
+> [!IMPORTANT] Validator gate
+> Do not deliver (clipboard or draft) until the Step 8 validator passed at least once in this run. If validation never passed:
+> - For `--clipboard` or `--both`: emit the markup with a `⚠ Markup did not pass validation — paste at your own risk` prefix banner.
+> - For `--draft`: refuse the upload and tell the user to address the issues. Auto-uploading invalid blocks would silently corrupt their WP page.
 
 **Mode resolution:**
 - If the command passed `clipboard` / `draft` / `both`, use it directly.
