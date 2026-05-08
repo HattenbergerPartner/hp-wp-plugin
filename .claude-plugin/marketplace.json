@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "hp-wp",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Hattenberger & Partner Claude Code plugins for WordPress page generation.",
   "owner": {
     "name": "Hattenberger & Partner",
@@ -12,7 +12,7 @@
       "name": "hp-wp",
       "description": "Generate WordPress ACF Gutenberg pages from a content briefing. Interactive triage, version-aware updates, team distribution.",
       "category": "development",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "author": {
         "name": "Hattenberger & Partner"
       },

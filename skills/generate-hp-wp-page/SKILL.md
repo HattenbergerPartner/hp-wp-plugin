@@ -147,3 +147,48 @@ Verify the generated output against ALL previous steps:
 Your final output must consist exclusively of valid HTML comment structures wrapping valid JSON payloads. ALWAYS wrap your output in an ```html markdown block so the user can easily copy it from their IDE chat view. Do not output conversational filler.
 
 Each block is a SINGLE LINE — no line breaks inside the `<!-- wp:acf/modulename ... /-->` HTML comment.
+
+### Step 9: Output Routing
+
+After Step 8 has rendered the markup, deliver it according to the output mode passed by the calling command (`clipboard`, `draft`, `both`, or `ask`).
+
+**Mode resolution:**
+- If the command passed `clipboard` / `draft` / `both`, use it directly.
+- If it passed `ask` (default — no flag given), call `AskUserQuestion`:
+  > "How should I deliver this page?" — options: **Both (clipboard + draft)** (recommended) / **Clipboard only** / **Draft only**.
+  - If `AskUserQuestion` is unavailable (non-interactive context), fall back to `clipboard` to preserve the legacy behavior.
+
+**Clipboard delivery** (`clipboard` and `both`):
+1. Pipe the ```html``` fenced markup to `pbcopy` via Bash.
+2. Print: `✓ Copied to clipboard.`
+
+**Draft delivery** (`draft` and `both`):
+
+1. **Resolve the title.** Run via Bash, passing the raw briefing text on stdin:
+   ```
+   node -e "import('${CLAUDE_PLUGIN_ROOT}/scripts/title-extractor.mjs').then(async m => { let s=''; for await (const c of process.stdin) s+=c; const t = m.extractTitle(s); console.log(JSON.stringify({title: t})); })" <<< "$BRIEFING_TEXT"
+   ```
+   - If a title comes back: ask the user via `AskUserQuestion` — "Use **'<title>'** as the WP page title?" with options **Use this title** (recommended) / **Edit title** (use the "Other" free-text answer to capture the new value).
+   - If `null`: ask the user with a free-text question for the title. Don't proceed without one.
+
+2. **Verify credentials.** Run:
+   ```
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/hp-wp-config.mjs --check
+   ```
+   - If exit code is non-zero, tell the user: "WordPress credentials are not configured. Run `/hp-wp:hp-config` first." and abort the draft path. (If mode is `both`, the clipboard step has already succeeded — that's fine.)
+
+3. **Upload.** Pipe the raw block markup (no surrounding ```html``` fence — just the `<!-- wp:acf/... /-->` lines) to the publish script:
+   ```
+   printf '%s' "$RAW_MARKUP" | node ${CLAUDE_PLUGIN_ROOT}/scripts/hp-wp-publish.mjs --title "$TITLE"
+   ```
+   The script prints a single JSON line on success: `{"id":123,"editUrl":"https://.../wp-admin/post.php?post=123&action=edit","status":"draft","slug":"..."}`.
+
+4. **Report the outcome.**
+   - On success (exit 0): print `✓ Draft created: [Edit in WP Admin](<editUrl>)` using the markdown link form so the user can click through.
+   - On exit code **2** (auth): print `✗ WordPress rejected the credentials. Run /hp-wp:hp-config to update them.`
+   - On exit code **3** (network): print `✗ Could not reach WordPress (network or timeout). Markup is still on the clipboard if --both was used.`
+   - On exit code **4** (validation): show the WP error message verbatim from stderr.
+
+**Both mode** runs clipboard first, then draft — so the user always has the markup locally even if the upload fails.
+
+> [!IMPORTANT] Step 9 must NOT alter the markup itself. The clipboard receives the same ```html```-fenced output Step 8 produced; the publish script receives only the raw `<!-- wp:acf/... /-->` lines (strip the markdown fence).
