@@ -186,6 +186,37 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
+## Module: Cards Full Text
+**Gutenberg Block Name:** `acf/cardsfulltext`
+
+### Available Fields:
+- **** (`accordion`) -> Key: `field_cfulltext_7a2b9c1e`
+- **** (`tab`) -> Key: `field_cfulltext_7a2b9c1f`
+- **background_color** (`button_group`) -> Key: `field_cfulltext_7a2b9c20` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-default`
+- **text_color** (`button_group`) -> Key: `field_cfulltext_7a2b9c21` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
+- **** (`tab`) -> Key: `field_cfulltext_7a2b9c22`
+- **headline_tag_selector** (`button_group`) -> Key: `field_cfulltext_7a2b9c23` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **headline** (`text`) -> Key: `field_cfulltext_7a2b9c24`
+- **introduction** (`textarea`) -> Key: `field_cfulltext_7a2b9c25`
+- **** (`tab`) -> Key: `field_cfulltext_7a2b9c26`
+- **full_cards** (`repeater`) -> Key: `field_cfulltext_7a2b9c27`
+  - Instructions: Three bordered cells (Figma 3-column-teaser). Title may use line breaks for two-line headings.
+  - **title** (`textarea`) -> Key: `field_cfulltext_7a2b9c28`
+    - Instructions: Main heading in the cell; use Enter for a second line if needed.
+  - **description** (`textarea`) -> Key: `field_cfulltext_7a2b9c2a`
+  - **card_link** (`link`) -> Key: `field_cfulltext_7a2b9c2b`
+    - Instructions: Optional text link with arrow.
+- **** (`tab`) -> Key: `field_cfulltext_7a2b9c2c`
+- **footer_intro** (`textarea`) -> Key: `field_cfulltext_7a2b9c2d`
+  - Instructions: Lead text next to the bullet list (e.g. optional designer support). Line breaks are preserved.
+- **included_items** (`repeater`) -> Key: `field_cfulltext_7a2b9c2f`
+  - Instructions: Bold lead (e.g. "UX/UI-Coaching") plus supporting sentence.
+  - **item_emphasis** (`text`) -> Key: `field_cfulltext_7a2b9c40`
+  - **item_detail** (`text`) -> Key: `field_cfulltext_7a2b9c41`
+    - Instructions: Sentence after the bold phrase (starts with a space in design if needed).
+
+---
+
 ## Module: CaseSingle
 **Gutenberg Block Name:** `acf/casesingle`
 
@@ -459,6 +490,21 @@ Multiselect will get default teaser texts.
 
 ---
 
+## Module: QuoteReveal
+**Gutenberg Block Name:** `acf/quotereveal`
+
+### Available Fields:
+- **** (`accordion`) -> Key: `field_691c5a1e8f0a2`
+- **background_color** (`button_group`) -> Key: `field_691c5a1e8f0a3` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-white`
+- **text_color** (`button_group`) -> Key: `field_691c5a1e8f0a4` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
+- **quote** (`textarea`) -> Key: `field_691c5a1e8f0a5`
+- **image** (`image`) -> Key: `field_691c5a1e8f0a6`
+- **image_ratio** (`button_group`) -> Key: `field_691c5a1e8f0a7` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4` -> Default: `3-4`
+- **reveal_overlay** (`true_false`) -> Key: `field_691c5a1e8f0a8` -> Default: `0`
+  - Instructions: Wenn aktiv, liegt dieser Block über dem folgenden Modul; beim seitlichen Aufklappen wird das darunterliegende Modul in der Mitte sichtbar.
+
+---
+
 ## Module: Steps
 **Gutenberg Block Name:** `acf/steps`
 
@@ -504,6 +550,35 @@ Multiselect will get default teaser texts.
   - Instructions: Links, list bullets, pixel decoration, icon/number container.
 - **button_variation** (`button_group`) -> Key: `field_698ef4884abc7` -> Choices: `secondary` | `primary` -> Default: `secondary`
 - **card_type** (`button_group`) -> Key: `field_699c7048b72ec` -> Choices: `default` | `price` | `big-icon` -> Default: `default`
+
+---
+
+## Module: StepsScroll
+**Gutenberg Block Name:** `acf/stepsscroll`
+
+### Available Fields:
+- **** (`accordion`) -> Key: `field_a91f02bc44ee2`
+- **** (`tab`) -> Key: `field_a91f02bc44ee3`
+- **headline** (`text`) -> Key: `field_a91f02bc44ee4`
+- **headline_tag_selector** (`button_group`) -> Key: `field_a91f02bc44ee5` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **steps** (`repeater`) -> Key: `field_a91f02bc44ee6`
+  - **** (`accordion`) -> Key: `field_a91f02bc44ee7`
+  - **title** (`text`) -> Key: `field_a91f02bc44ee8`
+  - **timeframe** (`text`) -> Key: `field_a91f02bc44ee9`
+    - Instructions: Shown below title (e.g. phase duration).
+  - **description** (`wysiwyg`) -> Key: `field_a91f02bc45010`
+  - **link** (`link`) -> Key: `field_a91f02bc45011`
+  - **digit_image** (`image`) -> Key: `field_a91f02bc45012`
+    - Instructions: Pixel-style step number artwork; falls back to numeric label if empty.
+  - **accent_color** (`button_group`) -> Key: `field_a91f02bc45013` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-primary`
+    - Instructions: Active digit & link accent on desktop.
+  - **step_background** (`button_group`) -> Key: `field_a91f02bc45014` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
+    - Instructions: Shown when this step is active (desktop scroll). Leave default to use module background.
+  - **step_text_color** (`button_group`) -> Key: `field_a91f02bc45015` -> Choices: `text-default` | `text-primary` | `text-white`
+    - Instructions: Shown when this step is active (desktop). Leave default for module text color.
+- **** (`tab`) -> Key: `field_a91f02bc45016`
+- **background_color** (`button_group`) -> Key: `field_a91f02bc45017` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-default`
+- **text_color** (`button_group`) -> Key: `field_a91f02bc45018` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 
 ---
 
