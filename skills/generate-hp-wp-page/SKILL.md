@@ -71,6 +71,74 @@ Then ask exactly one question: **"Generate the full markup with this plan, or re
 
 > [!IMPORTANT] Step 0 is purely planning. Do NOT generate any `<!-- wp:acf/* -->` markup yet. Steps 1–8 still own all output generation.
 
+### Step 0.5: Load Live WP Context (always run, both modes)
+
+Before strategic analysis, fetch the **live module/template context** authored in the WP admin (HP Skill → Modules / Templates). This is the single source of authoritative guidance for the rest of the chain.
+
+**Run:**
+
+```
+node ${CLAUDE_PLUGIN_ROOT}/scripts/wp-context-fetcher.mjs --print
+```
+
+The script prints a JSON object on stdout:
+
+```
+{
+  "source": "fresh|cache|stale-cache|none",
+  "age_seconds": <int>,
+  "generated_at": <ISO date>,
+  "plugin_version": "2.1.0",
+  "modules": {
+    "acf/textmodule": {
+      "basic_instructions": "...",
+      "best_usage": "...",
+      "other_instructions": "...",
+      "updated_at": "..."
+    },
+    ...
+  },
+  "templates": [
+    {
+      "id": 1,
+      "name": "Service landing page",
+      "cpt_relation": "page",
+      "basic_instructions": "...",
+      "advanced_instructions": "...",
+      "other_instructions": "...",
+      "must_have_modules":  ["acf/subheader", "acf/contact"],
+      "can_use_modules":    ["acf/textmodule", "acf/cards", ...],
+      "banned_modules":     ["acf/quote"]
+    },
+    ...
+  ]
+}
+```
+
+**How to use this bundle (TOP-PRIORITY GUIDANCE):**
+
+1. **Modules section** → for every module you select in later steps, look up its `basic_instructions`, `best_usage`, `other_instructions`. Treat these as **authoritative usage rules** that **override** anything in `module-purpose-guide.md`, `module-config-guide.md`, or `few-shot-examples.md`. Static reference files are fallback only — only consult them when the live bundle has nothing for that module.
+
+2. **Templates section** → match the briefing to a template. Matching heuristic: pick the template whose `cpt_relation` matches the page type implied by the briefing (most often `page`) AND whose name best matches the briefing intent ("service landing", "insights post", "homepage", etc.). When in doubt, prefer templates whose name semantically matches over CPT-only matches.
+
+   Once a template is matched, apply its three module groups as hard constraints on Step 1 module selection:
+   - **`must_have_modules`** — every slug in this array MUST appear in the final page. Place them in the natural section they belong to.
+   - **`banned_modules`** — every slug in this array is forbidden. NEVER include them, even if the briefing seems to call for them. If the briefing demands content that would normally use a banned module, choose the next-best alternative from `can_use_modules` (e.g. swap a banned `acf/quote` for an inline `acf/highlighttext`).
+   - **`can_use_modules`** — the suggested palette. Prefer modules from this list. A module outside the list is allowed only when nothing else fits; flag it in the Page Plan with a one-line rationale.
+
+   Apply the template's `basic_instructions` / `advanced_instructions` / `other_instructions` as authoritative guidance for the whole page (tone, layout, length expectations, SEO rules), again overriding the static reference files where they conflict.
+
+3. **No matching template** → no template-level constraints apply; module selection falls back entirely to the static guidance. Module-level instructions (point 1) still apply.
+
+4. **Empty bundle** (`"_empty": true` or `"source": "none"`) → the WP plugin is unreachable or has no context yet. Log a single short note ("Live WP context unavailable — using bundled references only") and proceed with the static reference files as the sole guidance.
+
+> [!IMPORTANT] Precedence order
+> 1. Live WP context (this Step 0.5 bundle) — always wins on conflicts.
+> 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover.
+> 3. Your own training-data heuristics — only when both above are silent.
+
+The bundle is cached at `~/.cache/hp-wp/wp-context.json` for 1 hour. To force a fresh fetch in this run, the user passes `--refresh-context` to `/hp-page` (which propagates to `wp-context-fetcher.mjs --refresh`).
+
 ### Step 1: Strategic Analysis
 Read the user's brief. Understand the narrative flow, target audience, and conversion goals.
 **Execute a simulated filesystem read** of `./references/module-purpose-guide.md` to map the requirements to specific Gutenberg modules based on their semantic purpose.
@@ -79,6 +147,10 @@ Plan the module sequence considering:
 - What is the page type? (Homepage → HomeHeader, Inner page → SubHeader)
 - What content sections are needed? Map each briefing section to a module.
 - What is the conversion goal? Ensure a Contact module is placed near the end.
+
+**Apply the live WP context from Step 0.5:**
+- If a template was matched, your module sequence MUST include every slug in `must_have_modules` and MUST NOT include any slug in `banned_modules`. Prefer slugs from `can_use_modules` over anything outside the list.
+- For each module you tentatively pick, immediately consult its `modules[<slug>]` entry from the bundle. If `best_usage` indicates the module is wrong for this content, swap it for an alternative; if `basic_instructions` constrains how it must be configured, carry those constraints forward into Steps 2–6.
 
 ### Step 2: Color System & Design Context
 **Execute a simulated filesystem read** of `./references/module-config-guide.md` (Color System section).
@@ -116,6 +188,11 @@ For `button_group` fields, check the available `Choices` values in the schema. U
 
 ### Step 5: UX Pattern Validation
 **Execute a simulated filesystem read** of `./references/module-config-guide.md` (full document).
+
+**Re-check against the Step 0.5 bundle one more time:**
+- For every module in your final sequence, confirm its slug is NOT in the matched template's `banned_modules`.
+- Confirm every slug in `must_have_modules` is present.
+- For each module, re-read its `modules[<slug>].basic_instructions` and `other_instructions` from the bundle and ensure your planned configuration honors them (e.g., if `basic_instructions` says "Always H2, never H3", your Step 3 heading plan must reflect that).
 
 Validate your planned module sequence against these UX heuristics:
 - **Page ending**: Every page should end with a conversion point (`Contact`) optionally followed by `LatestPosts`.
