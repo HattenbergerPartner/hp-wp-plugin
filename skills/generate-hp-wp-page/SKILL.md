@@ -56,7 +56,7 @@ Goal:     <primary CTA>
 Modules (in order):
   1. <ModuleName> — <one-line purpose> — bg:<color> / text:<color>
   2. …
-  N. Contact — <CTA copy summary> — bg:primary-dark / text:white
+  N. ContactExtended — <CTA copy summary> — bg:primary-dark / text:white
 
 Heading hierarchy:
   h1: "<draft h1 text>"
@@ -88,7 +88,10 @@ The script prints a JSON object on stdout:
   "source": "fresh|cache|stale-cache|none",
   "age_seconds": <int>,
   "generated_at": <ISO date>,
-  "plugin_version": "2.1.0",
+  "plugin_version": "2.2.0",
+  "registered_modules": ["acf/accordion", "acf/badges", "acf/cards", ...],
+  "registry": { "source": "fresh|cache|stale-cache|none", "age_seconds": <int>, "count": <int>, "error": null },
+  "dropped_unregistered": { "modules": [...], "templates": {...} },
   "modules": {
     "acf/textmodule": {
       "basic_instructions": "...",
@@ -117,6 +120,8 @@ The script prints a JSON object on stdout:
 
 **How to use this bundle (TOP-PRIORITY GUIDANCE):**
 
+0. **`registered_modules` is the hard allow-list.** It is fetched live from WordPress core (`/wp/v2/block-types?namespace=acf`) and lists the block types the theme registers *right now*. You may ONLY emit modules from this list. A module that is absent here is stored by WordPress but renders **nothing** on the page — no error, no container — which is exactly the silent-section bug this rule prevents. If a briefing, template, static reference file or few-shot example suggests a module that is not in `registered_modules`, pick the closest registered alternative (see the mapping table in `module-purpose-guide.md`) and mention the swap in one line. If `registered_modules` is `null` (registry unreachable), fall back to the module set in `acf-schemas.md` and tell the user that module existence could not be verified live.
+
 1. **Modules section** → for every module you select in later steps, look up its `basic_instructions`, `best_usage`, `other_instructions`. Treat these as **authoritative usage rules** that **override** anything in `module-purpose-guide.md`, `module-config-guide.md`, or `few-shot-examples.md`. Static reference files are fallback only — only consult them when the live bundle has nothing for that module.
 
 2. **Templates section** → match the briefing to a template. Matching heuristic: pick the template whose `cpt_relation` matches the page type implied by the briefing (most often `page`) AND whose name best matches the briefing intent ("service landing", "insights post", "homepage", etc.). When in doubt, prefer templates whose name semantically matches over CPT-only matches.
@@ -133,6 +138,7 @@ The script prints a JSON object on stdout:
 4. **Empty bundle** (`"_empty": true` or `"source": "none"`) → the WP plugin is unreachable or has no context yet. Log a single short note ("Live WP context unavailable — using bundled references only") and proceed with the static reference files as the sole guidance.
 
 > [!IMPORTANT] Precedence order
+> 0. `registered_modules` (live block registry) — absolute; nothing below may add a module that isn't in it.
 > 1. Live WP context (this Step 0.5 bundle) — always wins on conflicts.
 > 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover.
 > 3. Your own training-data heuristics — only when both above are silent.
@@ -145,8 +151,8 @@ Read the user's brief. Understand the narrative flow, target audience, and conve
 
 Plan the module sequence considering:
 - What is the page type? (Homepage → HomeHeader, Inner page → SubHeader)
-- What content sections are needed? Map each briefing section to a module.
-- What is the conversion goal? Ensure a Contact module is placed near the end.
+- What content sections are needed? Map each briefing section to a module **from `registered_modules`**.
+- What is the conversion goal? Ensure a `ContactExtended` module is placed near the end.
 
 **Apply the live WP context from Step 0.5:**
 - If a template was matched, your module sequence MUST include every slug in `must_have_modules` and MUST NOT include any slug in `banned_modules`. Prefer slugs from `can_use_modules` over anything outside the list.
@@ -159,9 +165,9 @@ Plan the color rhythm across the full page:
 - Assign `background_color` and `text_color` for each planned module.
 - Use ONLY valid color combinations from the contrast matrix.
 - Never use 3+ consecutive sections with the same background color.
-- Reserve `bg-primary-dark` + `text-white` for the Contact CTA section.
+- Reserve `bg-primary-dark` + `text-white` for the ContactExtended CTA section.
 - Vary accent colors (`bg-primary-green`, `bg-light-yellow`, `bg-primary`) for visual interest.
-- For modules with per-item colors (Cards, TeaserBoxes), plan distinct color schemes per item.
+- For modules with per-item colors (Cards, TeaserBoxes, StepsScroll), plan distinct color schemes per item.
 
 ### Step 3: SEO Structure Planning
 Plan the heading hierarchy before generating any markup:
@@ -195,11 +201,12 @@ For `button_group` fields, check the available `Choices` values in the schema. U
 - For each module, re-read its `modules[<slug>].basic_instructions` and `other_instructions` from the bundle and ensure your planned configuration honors them (e.g., if `basic_instructions` says "Always H2, never H3", your Step 3 heading plan must reflect that).
 
 Validate your planned module sequence against these UX heuristics:
-- **Page ending**: Every page should end with a conversion point (`Contact`) optionally followed by `LatestPosts`.
+- **Module existence**: Every module in the sequence is in `registered_modules` (Step 0.5). No exceptions.
+- **Page ending**: Every page should end with a conversion point (`ContactExtended`) optionally followed by `LatestPosts`.
 - **Visual dividers**: Use `Divider` between sections that share the same background color.
-- **Visual rhythm**: Don't stack two text-heavy modules (TextModule, TextImage) without a visual break (Quote, HighlightText, Gallery, Numbers, Cards).
-- **Social proof placement**: Place testimonials (`Quote`/`Quotation`) after value propositions, not before.
-- **Progressive disclosure**: Use `Tabs` or `Steps` for complex information instead of long TextModule blocks.
+- **Visual rhythm**: Don't stack two text-heavy modules (TextModule, TextImage) without a visual break (QuoteReveal, CardsAnimated, GalleryWallSimple, TextBadges, Cards).
+- **Social proof placement**: Place testimonials (`QuoteReveal`, `CaseSingle`) after value propositions, not before.
+- **Progressive disclosure**: Use `StepsScroll` (processes), `TextBullets` / `TextText` (categorised points) or `Accordion` (FAQ) for complex information instead of long TextModule blocks.
 - **Image alternation**: When using multiple `TextImage` modules, alternate `first_row_image_position` between `left` and `right`.
 
 ### Step 6: Draft Generation
@@ -244,11 +251,11 @@ Verify the generated output against ALL previous steps:
 3. **Heading hierarchy**: Is there exactly one `h1`? Do headings descend logically?
 4. **Repeater syntax**: Are repeater items correctly indexed (`_0_`, `_1_`, `_2_`)? Is the count field present?
 5. **Required fields**: Does every block have `"name"`, `"data"`, and `"mode":"edit"`?
-6. **Module sequence**: Does the page flow logically? Is Contact near the end?
+6. **Module sequence**: Does the page flow logically? Is ContactExtended near the end? Is every module in `registered_modules`?
 7. **Field completeness**: Every field declared in `acf-schemas.md` for the chosen module is present in `data`, with both `name` and `_name` (mapping) keys. Especially the design/layout fields (`background_color`, `text_color`, alignment selectors, `headline_tag_selector`, `first_item_open`).
 8. **JSON quote safety**: Every string value's content is JSON-parseable. No raw ASCII `"` inside strings unless escaped as `\"`. Mixed German `„`/ASCII `"` pairs are forbidden.
 9. **HTML escape**: Every `<` and `>` inside any string value is emitted as `<` / `>`. Verify by grep — no raw `<p>`, `<strong>`, `<ul>`, `<li>`, `</`, etc. should appear inside the JSON portion of any block.
-10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery.
+10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery — including `unregistered_module`, which means the module does not exist on the live site and must be swapped, not worked around.
 
 ### Step 8: Output Formatting
 **Execute a simulated filesystem read** of `./references/few-shot-examples.md` to verify your JSON wrapping matches the exact syntax.
@@ -263,7 +270,7 @@ Each block is a SINGLE LINE — no line breaks inside the `<!-- wp:acf/modulenam
 printf '%s' "$RAW_MARKUP" | node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-blocks.mjs
 ```
 
-The script returns JSON: `{ valid, blocks, errors, warnings, issues }`.
+The script returns JSON: `{ valid, blocks, errors, warnings, registry, issues }`. It checks JSON syntax, schema completeness, HTML escaping, quote hygiene **and live module existence** (`registry.source` tells you whether the live block list was fresh, cached, stale or unavailable). An `unregistered_module` error can only be fixed by replacing the module. Pass `--offline` only when the user explicitly asks for schema-only validation without network access.
 
 - If `valid` is `true`: proceed to Step 9.
 - If `valid` is `false`: fix every issue with `severity: "error"` (each issue includes a `hint` with the exact field key and corrective action), regenerate the affected block(s), and re-run the validator. Cap at **2 retries**; on the third failure, surface the validator output to the user along with the partial markup so they can decide whether to paste manually anyway.
@@ -315,6 +322,7 @@ After Step 8 has rendered the markup AND the validator returned `valid: true`, d
    - On exit code **2** (auth): print `✗ WordPress rejected the credentials. Run /hp-wp:hp-config to update them.`
    - On exit code **3** (network): print `✗ Could not reach WordPress (network or timeout). Markup is still on the clipboard if --both was used.`
    - On exit code **4** (validation): show the WP error message verbatim from stderr.
+   - On exit code **5** (unregistered module): the publish script refused because the markup contains a module the live site does not register. Print the stderr message, go back to Step 6 and replace the module. Never pass `--force` unless the user explicitly asks to upload anyway.
 
 **Both mode** runs clipboard first, then draft — so the user always has the markup locally even if the upload fails.
 

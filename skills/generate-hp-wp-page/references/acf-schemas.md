@@ -85,7 +85,7 @@ Custom example: <i>"linear-gradient(90deg, rgba(89, 131, 252, 1) 0%, rgba(96, 11
 - **background_color** (`button_group`) -> Key: `field_698eeb38b70aa` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **text_color** (`button_group`) -> Key: `field_698eeb46b70ab` -> Choices: `text-default` | `text-primary` | `text-white`
 - **headline** (`text`) -> Key: `field_698eeb55b70ac`
-- **headline_tag_selector** (`button_group`) -> Key: `field_698eeb61b70ad` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
+- **headline_tag_selector** (`button_group`) -> Key: `field_698eeb61b70ad` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **badges_gallery** (`gallery`) -> Key: `field_698eeb7bb70ae`
 - **badges_repeater** (`repeater`) -> Key: `field_698eeb97b70af`
   - **image** (`image`) -> Key: `field_698eebadb70b0`
@@ -109,7 +109,6 @@ Custom example: <i>"linear-gradient(90deg, rgba(89, 131, 252, 1) 0%, rgba(96, 11
 Small fixed option will reduce width and allow to align cards container.
 - **cards_container_alignment** (`button_group`) -> Key: `field_690e0fd06052d` -> Choices: `left` | `center` -> Default: `left`
 - **cards_image_first** (`true_false`) -> Key: `field_691b24853e4f4` -> Default: `0`
-- **cards_title_font_primary** (`true_false`) -> Key: `field_691b24aa3e4f5` -> Default: `0`
 - **** (`tab`) -> Key: `field_691b2fd5b4774`
 - **headline** (`text`) -> Key: `field_68df7abe72635`
 - **headline_tag_selector** (`button_group`) -> Key: `field_68df7ac572636` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
@@ -122,7 +121,26 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
-## Module: Cards Extended
+## Module: CardsAnimated
+**Gutenberg Block Name:** `acf/cardsanimated`
+
+### Available Fields:
+- **** (`accordion`) -> Key: `field_cardsanimated_accordion`
+- **text_color** (`button_group`) -> Key: `field_cardsanimated_text_color` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
+- **headline** (`text`) -> Key: `field_cardsanimated_headline`
+- **headline_tag_selector** (`button_group`) -> Key: `field_cardsanimated_headline_tag` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **subline** (`textarea`) -> Key: `field_cardsanimated_subline`
+- **button** (`link`) -> Key: `field_cardsanimated_button`
+- **button_variation** (`button_group`) -> Key: `field_cardsanimated_button_variation` -> Choices: `primary` | `secondary` | `link` -> Default: `primary`
+- **cards** (`repeater`) -> Key: `field_cardsanimated_cards`
+  - Instructions: Recommended: 3 cards, as in the design.
+  - **title** (`text`) -> Key: `field_cardsanimated_card_title`
+    - Instructions: Wrap highlighted words in span or strong tags.
+  - **text** (`textarea`) -> Key: `field_cardsanimated_card_text`
+
+---
+
+## Module: CardsExtended
 **Gutenberg Block Name:** `acf/cardsextended`
 
 ### Available Fields:
@@ -155,7 +173,7 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
-## Module: Cards Full
+## Module: CardsFull
 **Gutenberg Block Name:** `acf/cardsfull`
 
 ### Available Fields:
@@ -186,7 +204,7 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
-## Module: Cards Full Text
+## Module: CardsFullText
 **Gutenberg Block Name:** `acf/cardsfulltext`
 
 ### Available Fields:
@@ -232,22 +250,6 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
-## Module: Contact
-**Gutenberg Block Name:** `acf/contact`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_68df954c0465a`
-- **background_color** (`button_group`) -> Key: `field_68df955c0465b` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **text_color** (`button_group`) -> Key: `field_68df95660465c` -> Choices: `text-default` | `text-primary` | `text-white`
-- **headline** (`text`) -> Key: `field_68df95730465d`
-- **subline** (`text`) -> Key: `field_68df95790465e`
-- **headline_tag_selector** (`button_group`) -> Key: `field_68df95810465f` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **subline_tag_selector** (`button_group`) -> Key: `field_68df958d04660` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `p`
-- **button** (`link`) -> Key: `field_68df959c04661`
-- **team_member** (`post_object`) -> Key: `field_68df95a604662`
-
----
-
 ## Module: Contact Extended
 **Gutenberg Block Name:** `acf/contactextended`
 
@@ -257,6 +259,8 @@ Small fixed option will reduce width and allow to align cards container.
 - **text_color** (`button_group`) -> Key: `field_ce2a8f1100tg1` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 - **hello_gradient_color** (`button_group`) -> Key: `field_ce2a8f1100hg1` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-default`
   - Instructions: Start color of the HELLO wordmark gradient. Same theme tokens as Background color.
+- **hello_gradient_end_color** (`button_group`) -> Key: `field_ce2a8f1100hg2` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
+  - Instructions: End color of the HELLO wordmark gradient (100% stop). Same tokens as Background color. Leave empty to use white (#fff).
 - **headline** (`text`) -> Key: `field_ce2a8f11001e2`
 - **headline_tag_selector** (`button_group`) -> Key: `field_ce2a8f11001e3` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **introduction** (`textarea`) -> Key: `field_ce2a8f1100int`
@@ -316,23 +320,6 @@ Small fixed option will reduce width and allow to align cards container.
 
 ---
 
-## Module: HighlightText
-**Gutenberg Block Name:** `acf/highlighttext`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_68dfa347034b5`
-- **background_color** (`button_group`) -> Key: `field_68dfa358034b6` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **variant** (`button_group`) -> Key: `field_68dfa3bd034bd` -> Choices: `row` | `column`
-- **text_color** (`button_group`) -> Key: `field_68dfa364034b7` -> Choices: `text-default` | `text-primary` | `text-white`
-- **headline** (`text`) -> Key: `field_68dfa379034b8`
-- **headline_tag_selector** (`button_group`) -> Key: `field_68dfa381034b9` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
-- **subline** (`textarea`) -> Key: `field_68dfa38c034ba`
-- **button** (`link`) -> Key: `field_68dfa39b034bb`
-- **image** (`image`) -> Key: `field_68dfa3a6034bc`
-- **image_ratio** (`button_group`) -> Key: `field_68dfa87d8e6ee` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4`
-
----
-
 ## Module: HomeHeader
 **Gutenberg Block Name:** `acf/homeheader`
 
@@ -355,7 +342,6 @@ Small fixed option will reduce width and allow to align cards container.
 - **background_color** (`button_group`) -> Key: `field_61dc46a7e6786` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **decoration_color** (`button_group`) -> Key: `field_690b6a4c12e73` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **layout_width** (`button_group`) -> Key: `field_654a543c7879e` -> Choices: `fullwidth` | `boxed`
-- **image_ratio** (`button_group`) -> Key: `field_654a54657879f` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4`
 
 ---
 
@@ -384,24 +370,9 @@ Small fixed option will reduce width and allow to align cards container.
 ### Available Fields:
 - **** (`accordion`) -> Key: `field_68df69d93204a`
 - **background_color** (`button_group`) -> Key: `field_68df6a193204b` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **headline_tag_selector** (`button_group`) -> Key: `field_68df6a2a3204c` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
+- **headline_tag_selector** (`button_group`) -> Key: `field_68df6a2a3204c` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **headline** (`text`) -> Key: `field_68df6b2b8def9`
 - **logos** (`gallery`) -> Key: `field_68df6a3c3204d`
-
----
-
-## Module: Numbers
-**Gutenberg Block Name:** `acf/numbers`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_698df1eb967d5`
-- **headline** (`text`) -> Key: `field_698df203967d6`
-- **headline_tag_selector** (`button_group`) -> Key: `field_698df27089125` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
-- **numbers** (`repeater`) -> Key: `field_698df20b967d7`
-  - **title** (`text`) -> Key: `field_698df215967d8`
-  - **description** (`text`) -> Key: `field_698df222967d9`
-- **background_color** (`button_group`) -> Key: `field_698df235967da` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **text_color** (`button_group`) -> Key: `field_698df244967db` -> Choices: `text-default` | `text-primary` | `text-white`
 
 ---
 
@@ -412,7 +383,7 @@ Small fixed option will reduce width and allow to align cards container.
 - **** (`accordion`) -> Key: `field_68de84cc4e8bc`
 - **background_color** (`button_group`) -> Key: `field_68ee59152bcfb` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **text_color** (`button_group`) -> Key: `field_68ee59282bcfc` -> Choices: `text-default` | `text-primary` | `text-white`
-- **post_type** (`select`) -> Key: `field_68ee3d2d956f1` -> Choices: `page` | `cases` | `team` | `insights` -> Default: `false`
+- **post_type** (`select`) -> Key: `field_68ee3d2d956f1` -> Choices: `page` | `proto-playground` | `cases` | `team` | `insights` -> Default: `false`
 - **insights_category** (`taxonomy`) -> Key: `field_690cbf013cb7f`
   - Instructions: Leave empty to get all.
 Select one category to apply custom text for teasers (by category).
@@ -424,6 +395,7 @@ Multiselect will get default teaser texts.
 - **title** (`text`) -> Key: `field_68ee40af423e4`
 - **button** (`link`) -> Key: `field_68ee40be423e5`
 - **variation** (`button_group`) -> Key: `field_699c2a3d27a8d` -> Choices: `default` | `highlighted` -> Default: `default`
+- **slider_size** (`button_group`) -> Key: `field_699d_slider_size` -> Choices: `normal` | `small` -> Default: `normal`
 
 ---
 
@@ -450,46 +422,6 @@ Multiselect will get default teaser texts.
 
 ---
 
-## Module: Quotation
-**Gutenberg Block Name:** `acf/quotation`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_61a48dbf56d40`
-- **** (`tab`) -> Key: `field_654a563158876`
-- **overline** (`text`) -> Key: `field_66754e5c04a55`
-- **headline** (`text`) -> Key: `field_66754e6404a56`
-- **subline** (`text`) -> Key: `field_66754e6a04a57`
-- **quote** (`textarea`) -> Key: `field_61a48dce56d41`
-- **person_image** (`image`) -> Key: `field_66754eb504a58`
-- **person_name** (`text`) -> Key: `field_66754edc6dff8`
-- **person_position** (`text`) -> Key: `field_66754f0c6dff9`
-- **** (`tab`) -> Key: `field_654a563858877`
-- **background_color** (`button_group`) -> Key: `field_61af27bc6cdf6` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **text_color** (`button_group`) -> Key: `field_63627254973cf` -> Choices: `text-default` | `text-primary` | `text-white`
-- **headline_tag_selector** (`button_group`) -> Key: `field_66754ff66dffb` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **subline_tag_selector** (`button_group`) -> Key: `field_66755373bfc06` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h4`
-- **module_alignment** (`button_group`) -> Key: `field_66754f456dffa` -> Choices: `left` | `center`
-
----
-
-## Module: Quote
-**Gutenberg Block Name:** `acf/quote`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_68df89c95c01f`
-- **background_color** (`button_group`) -> Key: `field_68df8a1c5c022` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
-- **text_color** (`button_group`) -> Key: `field_68df8a285c023` -> Choices: `text-default` | `text-primary` | `text-white`
-- **headline** (`text`) -> Key: `field_68df89db5c020`
-- **headline_tag_selector** (`button_group`) -> Key: `field_68df89e95c021` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **quotes** (`repeater`) -> Key: `field_68df8a335c024`
-  - **image** (`image`) -> Key: `field_68df8a3a5c025`
-  - **image_ratio** (`button_group`) -> Key: `field_68df92c3516d7` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4`
-  - **quote** (`textarea`) -> Key: `field_68df8a435c026`
-  - **name** (`text`) -> Key: `field_68df8a595c027`
-  - **position** (`text`) -> Key: `field_68df8a5e5c028`
-
----
-
 ## Module: QuoteReveal
 **Gutenberg Block Name:** `acf/quotereveal`
 
@@ -499,24 +431,8 @@ Multiselect will get default teaser texts.
 - **text_color** (`button_group`) -> Key: `field_691c5a1e8f0a4` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 - **quote** (`textarea`) -> Key: `field_691c5a1e8f0a5`
 - **image** (`image`) -> Key: `field_691c5a1e8f0a6`
-- **image_ratio** (`button_group`) -> Key: `field_691c5a1e8f0a7` -> Choices: `auto` | `1-1` | `16-9` | `4-3` | `3-4` -> Default: `3-4`
 - **reveal_overlay** (`true_false`) -> Key: `field_691c5a1e8f0a8` -> Default: `0`
   - Instructions: Wenn aktiv, liegt dieser Block über dem folgenden Modul; beim seitlichen Aufklappen wird das darunterliegende Modul in der Mitte sichtbar.
-
----
-
-## Module: Steps
-**Gutenberg Block Name:** `acf/steps`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_6915f124f7f49`
-- **headline_tag_selector** (`button_group`) -> Key: `field_6915f158f7f4b` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **headline** (`text`) -> Key: `field_6915f14df7f4a`
-- **headline_alignment** (`button_group`) -> Key: `field_6915f173f7f4c` -> Choices: `left` | `center`
-- **numbered_cards** (`true_false`) -> Key: `field_6915f1d2f7f50` -> Default: `1`
-- **cards** (`repeater`) -> Key: `field_6915f184f7f4d`
-  - **title** (`text`) -> Key: `field_6915f18cf7f4e`
-  - **description** (`textarea`) -> Key: `field_6915f191f7f4f`
 
 ---
 
@@ -528,7 +444,7 @@ Multiselect will get default teaser texts.
 - **** (`tab`) -> Key: `field_698ef0ff4abb5`
 - **overline** (`text`) -> Key: `field_698ef1084abb6`
 - **headline** (`text`) -> Key: `field_698ef10f4abb7`
-- **headline_tag_selector** (`button_group`) -> Key: `field_698ef1184abb8` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
+- **headline_tag_selector** (`button_group`) -> Key: `field_698ef1184abb8` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **subline** (`text`) -> Key: `field_698ef1264abb9`
 - **cards** (`repeater`) -> Key: `field_698ef12d4abba`
   - **title** (`text`) -> Key: `field_698ef33c4abbb`
@@ -578,6 +494,8 @@ Multiselect will get default teaser texts.
     - Instructions: Shown when this step is active (desktop). Leave default for module text color.
 - **** (`tab`) -> Key: `field_a91f02bc45016`
 - **background_color** (`button_group`) -> Key: `field_a91f02bc45017` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-default`
+- **digit_color** (`button_group`) -> Key: `field_a91f02bc45019` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow` -> Default: `bg-primary`
+  - Instructions: Color of the step number label.
 - **text_color** (`button_group`) -> Key: `field_a91f02bc45018` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 
 ---
@@ -590,7 +508,7 @@ Multiselect will get default teaser texts.
 - **** (`tab`) -> Key: `field_698dd792885b2`
 - **overline** (`text`) -> Key: `field_698dd603885a8`
 - **headline** (`text`) -> Key: `field_698dd615885a9`
-- **headline_tag_selector** (`button_group`) -> Key: `field_698dd61c885aa` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p`
+- **headline_tag_selector** (`button_group`) -> Key: `field_698dd61c885aa` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **subline** (`textarea`) -> Key: `field_698dd658885ab`
 - **text** (`wysiwyg`) -> Key: `field_698dd690885ac`
 - **button** (`link`) -> Key: `field_698dd746885b1`
@@ -618,22 +536,6 @@ Multiselect will get default teaser texts.
 - **image** (`image`) -> Key: `field_6909be81bb7ad`
 - **buttons** (`repeater`) -> Key: `field_6909be94bb7ae`
   - **button** (`link`) -> Key: `field_6909bea2bb7af`
-
----
-
-## Module: Tabs
-**Gutenberg Block Name:** `acf/tabs`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_6909c65c865d9`
-- **headline_tag_selector** (`button_group`) -> Key: `field_6915b2df08ae3` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **headline** (`text`) -> Key: `field_6915b2bc08ae1`
-- **card_type** (`button_group`) -> Key: `field_6909c66d865da` -> Choices: `none` | `numbered` | `icon` -> Default: `none`
-- **headline_alignment** (`button_group`) -> Key: `field_6915b2c608ae2` -> Choices: `left` | `center`
-- **cards** (`repeater`) -> Key: `field_6909c6b2865db`
-  - **icon** (`image`) -> Key: `field_6909c6b8865dc`
-  - **title** (`text`) -> Key: `field_6909c6cd865dd`
-  - **description** (`textarea`) -> Key: `field_6909c6d3865de`
 
 ---
 
@@ -713,6 +615,8 @@ Multiselect will get default teaser texts.
 - **** (`accordion`) -> Key: `field_67e2a1b4c5d68`
 - **headline_tag_selector** (`button_group`) -> Key: `field_67e2a1b4c5d69` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **headline** (`text`) -> Key: `field_67e2a1b4c5d6a`
+- **description** (`textarea`) -> Key: `field_67e2a1b4c5d70`
+- **headline_alignment** (`button_group`) -> Key: `field_67e2a1b4c5d71` -> Choices: `left` | `center` -> Default: `left`
 - **bullets** (`repeater`) -> Key: `field_67e2a1b4c5d6b`
   - **title** (`text`) -> Key: `field_67e2a1b4c5d6c`
   - **text** (`wysiwyg`) -> Key: `field_67e2a1b4c5d6d`
@@ -753,18 +657,6 @@ Multiselect will get default teaser texts.
 
 ---
 
-## Module: TextLinks
-**Gutenberg Block Name:** `acf/textlinks`
-
-### Available Fields:
-- **** (`accordion`) -> Key: `field_68ffa1b4c5e01`
-- **headline_tag_selector** (`button_group`) -> Key: `field_68ffa1b4c5e02` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
-- **headline** (`text`) -> Key: `field_68ffa1b4c5e03`
-- **links** (`repeater`) -> Key: `field_68ffa1b4c5e04`
-  - **link** (`link`) -> Key: `field_68ffa1b4c5e05`
-
----
-
 ## Module: TextModule
 **Gutenberg Block Name:** `acf/textmodule`
 
@@ -777,6 +669,7 @@ Multiselect will get default teaser texts.
 - **text** (`wysiwyg`) -> Key: `field_667a7f279884d`
 - **buttons** (`repeater`) -> Key: `field_63e9fa4a03b7f`
   - **button** (`link`) -> Key: `field_63e9fa5903b80`
+  - **button_variation** (`button_group`) -> Key: `field_698f7012text01` -> Choices: `primary` | `secondary` | `link` -> Default: `primary`
 - **background_image** (`image`) -> Key: `field_6891cb2fa227b`
 - **** (`tab`) -> Key: `field_654ce9ccccec4`
 - **background_type** (`button_group`) -> Key: `field_6891cb10a227a` -> Choices: `color` | `image`

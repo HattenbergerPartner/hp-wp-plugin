@@ -47,7 +47,7 @@ const FIELD_LINE_RE = /^(\s*)- \*\*([^*]*)\*\* \(`([^`]+)`\) -> Key: `([^`]+)`(.
 const CHOICES_RE = /-> Choices: (.+?)(?: -> Default:|$)/;
 const DEFAULT_RE = /-> Default: `([^`]*)`/;
 
-const UI_TYPES = new Set(['tab', 'accordion', 'group']);
+const UI_TYPES = new Set(['tab', 'accordion', 'group', 'message']);
 
 function parseChoices(tail) {
     const m = tail.match(CHOICES_RE);

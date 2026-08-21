@@ -68,7 +68,7 @@ These are not validated, but including them makes the saved blocks indistinguish
 | :--- | :--- | :--- |
 | First header module (HomeHeader/SubHeader) | `h1` | Always — the page's primary heading for SEO |
 | All section-level modules | `h2` | Default for every content section |
-| Sub-sections within a module | `h3` or `h4` | e.g., `row_headline_tag_selector` in TextImage, `subline_tag_selector` in Quotation |
+| Sub-sections within a module | `h3` or `h4` | e.g., `row_headline_tag_selector` in TextImage |
 
 **SEO Note:** Place the primary keyword in the `h1` headline. Secondary keywords should appear in the first `h2` section.
 
@@ -107,7 +107,7 @@ These are not validated, but including them makes the saved blocks indistinguish
 ### Color Rhythm Rules
 - Never use 3+ consecutive sections with the same background color
 - Alternate between light (`bg-default`) and accent/dark backgrounds
-- Use `bg-primary-dark` sparingly — reserve for Contact or key CTA sections
+- Use `bg-primary-dark` sparingly — reserve for ContactExtended or key CTA sections
 - When adjacent sections share a background, insert a `Divider` module between them
 
 ### Per-Module Color Overrides
@@ -115,6 +115,8 @@ Some modules have per-item color controls in addition to the module-level colors
 - **Cards**: Each card has `card_background_color` and `card_text_color` — vary these across cards for visual interest
 - **TeaserBoxes**: Each teaser has `background_colors` and `text_colors` — use distinct colors per teaser
 - **StepsExtended**: Has `card_background_color`, `card_text_color`, and `accent_color` for detailed control
+- **StepsScroll**: Each step has `accent_color`, `step_background`, `step_text_color` (shown while the step is active); module-level `digit_color` colours the step numbers
+- **ContactExtended**: `hello_gradient_color` / `hello_gradient_end_color` colour the HELLO wordmark — pick tokens that contrast with `background_color`
 - **StickyColumn**: Has `block_background_color` and `block_text_color` for the scrolling blocks
 
 ---
@@ -133,11 +135,11 @@ Some modules have per-item color controls in addition to the module-level colors
 | `left` | Default — standard text layout |
 | `center` | Short centered statements, announcements |
 
-### `module_alignment` (Quotation)
+### `headline_alignment` (TextBullets)
 | Value | When to Use |
 | :--- | :--- |
 | `left` | Default for content-heavy pages |
-| `center` | Standalone testimonial highlight |
+| `center` | Standalone statement section |
 
 ---
 
@@ -167,14 +169,20 @@ Some modules have per-item color controls in addition to the module-level colors
 
 ---
 
-## Card & Tab Configuration
+## Card & Step Configuration
 
-### `card_type` (Tabs)
+### `reveal_overlay` (QuoteReveal)
 | Value | When to Use |
 | :--- | :--- |
-| `icon` | Visual tabs with icon images — use when briefing provides icons or distinct visual identifiers |
-| `numbered` | Sequential/process content — "Step 1, Step 2, Step 3" flow |
-| `none` | Plain text tabs — use for simple category switching |
+| `0` | Default — quote renders as a normal section |
+| `1` | Quote overlays the following module and reveals it on scroll — only when the design explicitly asks for it |
+
+### `button_variation` (TextText, TextBullets, CardsAnimated, ContactExtended, StepsExtended)
+| Value | When to Use |
+| :--- | :--- |
+| `primary` | Main CTA of the section |
+| `secondary` | Supporting link-style button (default for TextText / TextBullets) |
+| `link` | Plain text link |
 
 ### `cards_per_row` (Cards)
 | Value | When to Use |
@@ -189,7 +197,7 @@ Some modules have per-item color controls in addition to the module-level colors
 | `auto` | Cards fill the container width evenly (default) |
 | `fixed` | Fixed-width cards — use with `narrow_container:"1"` for contained layouts |
 
-### `numbered_cards` (Cards / Steps)
+### `numbered_cards` (Cards)
 | Value | When to Use |
 | :--- | :--- |
 | `"0"` | Feature lists, team grids, general content cards |
@@ -199,11 +207,11 @@ Some modules have per-item color controls in addition to the module-level colors
 
 ## Layout Variants
 
-### `variant` (HighlightText)
+### `module_variation` (StickyColumn)
 | Value | When to Use |
 | :--- | :--- |
-| `row` | Text and image side-by-side — use for balanced visual weight |
-| `column` | Stacked layout — use for emphasis on the headline with supporting image below |
+| `narrow` | Default — contained width |
+| `wide` | Full-width layout for image-heavy blocks |
 
 ### `layout_width` (GalleryWallSimple)
 | Value | When to Use |
@@ -229,8 +237,9 @@ Some modules have per-item color controls in addition to the module-level colors
 
 1. **Multiple `h1` tags**: Only the first header module uses `h1`. Everything else is `h2` or lower.
 2. **Low-contrast color combos**: Never pair `bg-primary` with `text-default` or `bg-primary-green` with `text-white`.
-3. **Contact at page top**: `Contact` module belongs near the end, typically second-to-last before `LatestPosts`.
+3. **Contact at page top**: `ContactExtended` belongs near the end, typically second-to-last before `LatestPosts`.
 4. **Missing `"mode":"edit"`**: Every block must include `"mode":"edit"` in the JSON payload.
-5. **Stacking text-heavy modules**: Don't place 3+ TextModule/TextImage blocks consecutively — break them up with visual modules (Quote, HighlightText, Gallery, Numbers).
+5. **Stacking text-heavy modules**: Don't place 3+ TextModule/TextImage blocks consecutively — break them up with visual modules (QuoteReveal, CardsAnimated, GalleryWallSimple, TextBadges).
+8. **Removed modules**: `acf/contact`, `acf/quote`, `acf/quotation`, `acf/tabs`, `acf/steps`, `acf/numbers`, `acf/highlighttext`, `acf/textlinks` no longer exist in the theme. They are stored but render nothing. Always cross-check the Step 0.5 `registered_modules` list.
 6. **Same background streak**: Avoid 3+ consecutive modules sharing the same `background_color`.
 7. **Wrong repeater syntax**: Repeater items use `{name}_{index}_{field}` format (e.g., `cards_0_title`, `cards_1_title`). The count field uses just the repeater name (e.g., `"cards":3`).

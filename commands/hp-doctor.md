@@ -1,6 +1,6 @@
 ---
 description: Diagnose the hp-wp plugin install — verify reference files, manifest sanity, server reachability.
-allowed-tools: Read, Glob, Bash(curl:*)
+allowed-tools: Read, Glob, Bash(curl:*), Bash(node:*)
 ---
 
 Run a structured health check on the hp-wp plugin installed at `${CLAUDE_PLUGIN_ROOT}`. Report each check as PASS / WARN / FAIL with a short remedy when anything is off.
@@ -39,6 +39,16 @@ For every file path below, use the **Read** tool (or **Glob** for directory list
    ```
    PASS if HTTP 200, WARN otherwise.
 
+7. **Live module registry vs bundled schema** — run via Bash:
+   ```
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/wp-block-registry.mjs --refresh
+   ```
+   - FAIL if `ok` is `false` (credentials missing / WP unreachable) — remedy: `/hp-wp:hp-config`.
+   - Otherwise compare `modules` against the `**Gutenberg Block Name:**` entries in `references/acf-schemas.md`:
+     - modules in the schema but NOT registered live → WARN "schema lists removed modules: …" (the skill will refuse them, but a maintainer should run `/hp-wp:hp-sync` and release).
+     - modules registered live but NOT in the schema → WARN "new modules without schema: …" (they cannot be generated until the schema is re-synced).
+   - PASS when both sets match.
+
 ## Output format
 
 ```
@@ -52,8 +62,9 @@ hp-wp doctor
 [PASS] Hooks                   (session-start hook registered)
 [PASS] WP API reachable        (HTTP 200 from /skill-version)
 [PASS] Marketplace reachable   (HTTP 200)
+[PASS] Module registry         (31 registered, schema in sync)
 
-Summary: 8 PASS, 0 WARN, 0 FAIL → all healthy.
+Summary: 9 PASS, 0 WARN, 0 FAIL → all healthy.
 ```
 
 If any check fails, include a one-line remedy under the failing line. Example for a missing reference file:

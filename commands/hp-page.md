@@ -1,5 +1,5 @@
 ---
-description: Generate a WordPress ACF page from a briefing. Use --interactive for clarifying questions and a plan summary, --fast for one-shot generation. --draft uploads as a WP draft, --clipboard copies to clipboard, --both does both (default = ask). --refresh-context forces a live re-fetch of WP module/template guidance.
+description: Generate a WordPress ACF page from a briefing. Use --interactive for clarifying questions and a plan summary, --fast for one-shot generation. --draft uploads as a WP draft, --clipboard copies to clipboard, --both does both (default = ask). --refresh-context forces a live re-fetch of WP module/template guidance and the live module registry.
 argument-hint: "[briefing text or path] [--interactive | --fast] [--draft | --clipboard | --both] [--refresh-context]"
 allowed-tools: Read, AskUserQuestion, Bash(grep:*), Bash(find:*), Bash(pbcopy), Bash(node:*)
 ---
@@ -21,7 +21,7 @@ User input: $ARGUMENTS
      - `--both` → clipboard AND WordPress draft
      - none → ask the user after generation (Step 9 prompts)
    - **Context flags:**
-     - `--refresh-context` → before invoking the skill, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/wp-context-fetcher.mjs --refresh` to bypass the local cache and pull a fresh module/template bundle from WordPress. Without this flag, Step 0.5 of the skill uses the cache (fresh up to 1 hour).
+     - `--refresh-context` → before invoking the skill, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/wp-context-fetcher.mjs --refresh` to bypass the local cache and pull a fresh module/template bundle **and a fresh list of registered block types** from WordPress. Without this flag, Step 0.5 of the skill uses the cache (fresh up to 1 hour). The bundle's `registered_modules` array is the hard allow-list of modules that may appear in the output; the validator and the publish script enforce it independently.
 
 2. If the remaining argument looks like a file path (ends in `.md`/`.txt`, contains `/`, or exists on disk), Read it. Otherwise treat as inline briefing text.
 

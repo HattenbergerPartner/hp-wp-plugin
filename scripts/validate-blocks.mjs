@@ -13,14 +13,27 @@
  *      e.g. „..." (U+201E paired with U+0022)
  *   4. HTML escape hygiene           — raw < or > inside any string value
  *      must be < / > to match Gutenberg's serializer
+ *   5. Live module existence (error) — the module must be a block type that
+ *      WordPress currently has registered (wp-block-registry.mjs). A block
+ *      whose module was removed from the theme is stored fine and rendered
+ *      as NOTHING, so this is the only check that catches a silently
+ *      dropped section before it reaches the editor.
+ *
+ * Flags:
+ *   --offline          Skip the live registry check (schema-only validation).
+ *                      The result then carries `registry: {source:'skipped'}`
+ *                      and a single `registry_unavailable` warning.
+ *   --refresh-registry Force a fresh block-type fetch (bypass 1h cache).
  *
  * Stdout: single-line JSON
- *   { valid: bool, blocks: number, issues: [{block, module, field?, severity, code, message, hint?}] }
+ *   { valid: bool, blocks: number, errors, warnings, registry: {source, age_seconds, count},
+ *     issues: [{block, module, field?, severity, code, message, hint?}] }
  *
  * Exit codes: 0 clean, 1 issues found.
  */
 
 import { loadSchemas } from './schema-loader.mjs';
+import { loadRegistry } from './wp-block-registry.mjs';
 
 const BLOCK_RE = /<!--\s*wp:acf\/([a-z0-9_-]+)\s+(\{[\s\S]*?\})\s*\/-->/g;
 
@@ -158,10 +171,39 @@ function checkQuoteHygiene(data) {
     return issues;
 }
 
+const argv = process.argv.slice(2);
+const offline = argv.includes('--offline');
+const refreshRegistry = argv.includes('--refresh-registry');
+
 const input = await readStdin();
 const schemas = loadSchemas();
+const registry = offline
+    ? { slugs: null, list: [], source: 'skipped', age_seconds: null, error: null }
+    : await loadRegistry({ refresh: refreshRegistry });
 const issues = [];
 let blockCount = 0;
+
+if (registry.slugs === null) {
+    issues.push({
+        block: 0,
+        module: null,
+        severity: 'warn',
+        code: 'registry_unavailable',
+        message: offline
+            ? 'live module registry skipped (--offline) — module existence was NOT verified'
+            : `could not load the live module registry (${registry.error || 'unknown error'}) — module existence was NOT verified`,
+        hint: 'a module removed from the theme renders as nothing; run /hp-wp:hp-config and re-validate before uploading',
+    });
+} else if (registry.source === 'stale-cache') {
+    issues.push({
+        block: 0,
+        module: null,
+        severity: 'warn',
+        code: 'registry_stale',
+        message: `live module registry unreachable (${registry.error}); using cached list from ${registry.fetched_at}`,
+        hint: 'results are only as current as that cache',
+    });
+}
 
 let match;
 const re = new RegExp(BLOCK_RE);
@@ -171,6 +213,18 @@ while ((match = re.exec(input)) !== null) {
     const moduleName = match[1];
     const jsonStr = match[2];
     const module = schemas.get(moduleName);
+
+    if (registry.slugs && !registry.slugs.has(moduleName)) {
+        issues.push({
+            block: blockIndex,
+            module: moduleName,
+            severity: 'error',
+            code: 'unregistered_module',
+            message: `module "acf/${moduleName}" is not registered on the live WordPress site — the block would be stored but render NOTHING`,
+            hint: `replace it with a registered module (${registry.list.length} available: ${registry.list.join(', ')})`,
+        });
+        // Still run the remaining checks so the author sees every problem at once.
+    }
 
     const parseFail = findUnescapedQuote(jsonStr);
     if (parseFail) {
@@ -195,14 +249,17 @@ while ((match = re.exec(input)) !== null) {
     }
 
     if (!module) {
-        issues.push({
-            block: blockIndex,
-            module: moduleName,
-            severity: 'warn',
-            code: 'unknown_module',
-            message: `module "acf/${moduleName}" not found in acf-schemas.md`,
-            hint: 'either the schema is stale (run /hp-wp:hp-sync) or the module name is wrong',
-        });
+        const alreadyFlagged = registry.slugs && !registry.slugs.has(moduleName);
+        if (!alreadyFlagged) {
+            issues.push({
+                block: blockIndex,
+                module: moduleName,
+                severity: 'error',
+                code: 'unknown_module',
+                message: `module "acf/${moduleName}" not found in acf-schemas.md — field keys cannot be verified`,
+                hint: 'either the module name is wrong, or the bundled schema is stale (maintainer: run /hp-wp:hp-sync and release)',
+            });
+        }
         continue;
     }
 
@@ -224,6 +281,11 @@ const result = {
     blocks: blockCount,
     errors: errorCount,
     warnings: issues.length - errorCount,
+    registry: {
+        source: registry.source,
+        age_seconds: registry.age_seconds,
+        count: registry.list.length,
+    },
     issues,
 };
 

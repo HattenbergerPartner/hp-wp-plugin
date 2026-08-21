@@ -19,12 +19,23 @@
  * Output contract: callers (the SKILL.md Step 0.5) should always read stdout
  * as JSON. Even when --strict is OFF and the network fails, stdout will be
  * a valid JSON object with empty `modules` / `templates`. A warning goes to stderr.
+ *
+ * Live module registry (added 2.2.0): the printed bundle also carries
+ *   registered_modules   — ["acf/accordion", ...] the block types WordPress has
+ *                          registered RIGHT NOW (from wp-block-registry.mjs).
+ *                          This is the hard allow-list for page generation.
+ *   registry             — {source, age_seconds, count, error}
+ *   dropped_unregistered — guidance/template entries that referenced a module
+ *                          that no longer exists and were filtered out.
+ * When the registry cannot be resolved, registered_modules is null and the
+ * skill must fall back to acf-schemas.md (and the validator will warn).
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { loadCredentials } from './env-loader.mjs';
+import { loadRegistry, bareSlug } from './wp-block-registry.mjs';
 
 const TIMEOUT_MS = 20000;
 const DEFAULT_TTL_SECONDS = 3600;
@@ -102,7 +113,7 @@ async function fetchBundle({ baseUrl, user, pass }) {
         throw new Error(`Authentication failed (${response.status}). Run /hp-wp:hp-config.`);
     }
     if (response.status === 404) {
-        throw new Error('Endpoint /context-bundle not found. The WP plugin needs to be upgraded to 2.1.0+ (./deploy-plugin.sh).');
+        throw new Error('Endpoint /context-bundle not found. The WP plugin needs to be upgraded to 2.1.0+ (2.2.0 recommended) (./deploy-plugin.sh).');
     }
     if (!response.ok) {
         throw new Error(`WP returned HTTP ${response.status}`);
@@ -199,11 +210,64 @@ async function main() {
         return;
     }
 
+    const { registered_modules, registry, dropped_unregistered, modules, templates } =
+        await applyRegistry(bundle, { refresh: args.refresh });
+
     process.stdout.write(JSON.stringify({
         source,
         age_seconds: source === 'cache' ? cacheAge : 0,
         ...bundle,
+        modules,
+        templates,
+        registered_modules,
+        registry,
+        dropped_unregistered,
     }, null, 2) + '\n');
+}
+
+/**
+ * Overlay the live block registry on the guidance bundle: expose the
+ * allow-list and strip any guidance / template reference to a module that
+ * WordPress no longer registers (the server keeps those rows in its DB
+ * after a theme removal, so they would otherwise be recommended).
+ */
+async function applyRegistry(bundle, { refresh }) {
+    const reg = await loadRegistry({ refresh });
+    const modules = { ...(bundle?.modules || {}) };
+    const templates = Array.isArray(bundle?.templates) ? bundle.templates.map(t => ({ ...t })) : [];
+    const dropped = { modules: [], templates: {} };
+
+    if (reg.slugs) {
+        for (const key of Object.keys(modules)) {
+            if (!reg.slugs.has(bareSlug(key))) {
+                delete modules[key];
+                dropped.modules.push(key);
+            }
+        }
+        for (const t of templates) {
+            for (const field of ['must_have_modules', 'can_use_modules', 'banned_modules']) {
+                if (!Array.isArray(t[field])) continue;
+                const gone = t[field].filter(m => !reg.slugs.has(bareSlug(m)));
+                if (gone.length) {
+                    t[field] = t[field].filter(m => reg.slugs.has(bareSlug(m)));
+                    (dropped.templates[t.name || t.id] ??= {})[field] = gone;
+                }
+            }
+        }
+        if (dropped.modules.length || Object.keys(dropped.templates).length) {
+            process.stderr.write(`[wp-context-fetcher] Filtered guidance for modules no longer registered: ${JSON.stringify(dropped)}\n`);
+        }
+    } else {
+        process.stderr.write(`[wp-context-fetcher] WARNING: live module registry unavailable (${reg.error || reg.source}); registered_modules is null.\n`);
+    }
+
+    return {
+        modules,
+        templates,
+        registered_modules: reg.slugs ? reg.list.map(m => `acf/${m}`) : null,
+        registry: { source: reg.source, age_seconds: reg.age_seconds, count: reg.list.length, error: reg.error },
+        dropped_unregistered: dropped,
+    };
 }
 
 main().catch((err) => {
