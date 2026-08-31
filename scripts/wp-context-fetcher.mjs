@@ -29,6 +29,13 @@
  *                          that no longer exists and were filtered out.
  * When the registry cannot be resolved, registered_modules is null and the
  * skill must fall back to acf-schemas.md (and the validator will warn).
+ *
+ * Live ACF schema (added 2.3.0): the printed bundle also carries
+ *   schema_paths  — absolute paths to the acf-schemas.md and color-system.md
+ *                   the skill must read this run (live cache, or bundled).
+ *   schema        — {source, age_seconds, verified, module_count, field_count}
+ * When `schema.verified` is false the field keys were not confirmed against
+ * WordPress; the skill must say so and the publish script refuses to upload.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from 'node:fs';
@@ -36,6 +43,7 @@ import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { loadCredentials } from './env-loader.mjs';
 import { loadRegistry, bareSlug } from './wp-block-registry.mjs';
+import { loadSchemaBundle } from './wp-schema-fetcher.mjs';
 
 const TIMEOUT_MS = 20000;
 const DEFAULT_TTL_SECONDS = 3600;
@@ -213,6 +221,11 @@ async function main() {
     const { registered_modules, registry, dropped_unregistered, modules, templates } =
         await applyRegistry(bundle, { refresh: args.refresh });
 
+    const schemaBundle = await loadSchemaBundle({ refresh: args.refresh });
+    if (!schemaBundle.verified) {
+        process.stderr.write(`[wp-context-fetcher] WARNING: ACF schema not verified (${schemaBundle.source}${schemaBundle.error ? `: ${schemaBundle.error}` : ''}); using the ${schemaBundle.source} copy.\n`);
+    }
+
     process.stdout.write(JSON.stringify({
         source,
         age_seconds: source === 'cache' ? cacheAge : 0,
@@ -222,6 +235,14 @@ async function main() {
         registered_modules,
         registry,
         dropped_unregistered,
+        schema_paths: { acf_schemas: schemaBundle.acfPath, color_system: schemaBundle.colorPath },
+        schema: {
+            source: schemaBundle.source,
+            age_seconds: schemaBundle.age_seconds,
+            verified: schemaBundle.verified,
+            module_count: schemaBundle.module_count,
+            field_count: schemaBundle.field_count,
+        },
     }, null, 2) + '\n');
 }
 
