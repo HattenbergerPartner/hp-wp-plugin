@@ -13,8 +13,11 @@ Steps to perform:
 
 3. **Fetch the remote version.** Run via Bash:
    ```
-   curl -fsSL --max-time 5 https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version
+   curl -fsSL --max-time 5 https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json
    ```
+
+The version to compare is the **plugin entry's** `version` (the second `"version"` in the file), not the catalog version at the top. The WordPress REST API requires authentication, so `/skill-version` cannot be used for an unauthenticated check.
+
    If the request fails, treat the remote version as unreachable — do NOT error out.
 
 4. **Compare and report.** Print this format exactly:

@@ -34,13 +34,18 @@ fi
 LOCAL=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
 
 # Endpoint (from manifest.json)
-ENDPOINT=$(grep -o '"version_endpoint"[[:space:]]*:[[:space:]]*"[^"]*"' "$MANIFEST" | sed 's/.*"\(https[^"]*\)"$/\1/')
+# Prefer the public marketplace catalog: the WP REST API requires
+# authentication, so /skill-version returns 401 for this unauthenticated check.
+ENDPOINT=$(grep -o '"version_source"[[:space:]]*:[[:space:]]*"[^"]*"' "$MANIFEST" | sed 's/.*"\(https[^"]*\)"$/\1/')
+[ -n "$ENDPOINT" ] || ENDPOINT=$(grep -o '"version_endpoint"[[:space:]]*:[[:space:]]*"[^"]*"' "$MANIFEST" | sed 's/.*"\(https[^"]*\)"$/\1/')
 
 [ -n "$LOCAL" ] && [ -n "$ENDPOINT" ] || exit 0
 
 # Hard 1.5s timeout — never block session start
 RESPONSE=$(curl -fsSL --max-time 1.5 "$ENDPOINT" 2>/dev/null) || exit 0
-REMOTE=$(echo "$RESPONSE" | grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+# marketplace.json carries the catalog version first and the plugin entry
+# second; the plugin entry is the one that matters. /skill-version has only one.
+REMOTE=$(echo "$RESPONSE" | grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' | tail -1 | sed 's/.*"\([^"]*\)"$/\1/')
 
 [ -n "$REMOTE" ] || exit 0
 

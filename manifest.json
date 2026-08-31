@@ -4,6 +4,7 @@
   "source_url": "https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files",
   "marketplace_url": "https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json",
   "version_endpoint": "https://hp-wp.hattenbergerpartner.de/wp-json/hp-skill/v1/skill-version",
+  "version_source": "https://hp-wp.hattenbergerpartner.de/wp-content/hp-skill-files/marketplace.json",
   "github_repo": "hattenbergerpartner/content-wp-skill",
   "marketplace_name": "hp-wp"
 }
