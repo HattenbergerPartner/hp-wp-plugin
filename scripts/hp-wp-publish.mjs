@@ -20,6 +20,8 @@
  *   4 WP rejected the request (validation)
  *   5 markup uses a module that is not registered on the live site (would render
  *     as nothing). Pass --force to upload anyway.
+ *   6 schema was not verified against the live site (stale or bundled). Pass
+ *     --force to upload anyway.
  *
  * Flags:
  *   --force   skip the live module-registry gate (exit 5)
@@ -28,6 +30,7 @@
 import { loadCredentials, USER_ENV_PATH } from './env-loader.mjs';
 import { createDraft, WPPublishError } from './wp-publisher.mjs';
 import { loadRegistry, findUnregistered } from './wp-block-registry.mjs';
+import { loadSchemaBundle } from './wp-schema-fetcher.mjs';
 
 function parseArgs(argv) {
     const out = { postType: 'pages', status: 'draft' };
@@ -92,6 +95,21 @@ if (registry.slugs) {
     }
 } else {
     console.error(`WARNING: could not verify module registry (${registry.error || registry.source}); uploading without the existence check.`);
+}
+
+// ── Live schema gate ─────────────────────────────────────────────────────────
+// Field keys that the theme no longer has are stored by WordPress and never
+// rendered. Refuse to upload unless the schema was verified live.
+const schemaBundle = await loadSchemaBundle();
+if (!schemaBundle.verified && !args.force) {
+    console.error(`Refusing to upload: the ACF field schema was not verified against ${creds.baseUrl}.`);
+    console.error(`Source: ${schemaBundle.source}${schemaBundle.error ? ` (${schemaBundle.error})` : ''}.`);
+    console.error('Field keys may be stale, which stores content under keys nothing renders.');
+    console.error('Fix the connection, or re-run with --force to upload anyway.');
+    process.exit(6);
+}
+if (!schemaBundle.verified && args.force) {
+    console.error(`WARNING (--force): uploading with an unverified schema (${schemaBundle.source}) — field keys may be stale.`);
 }
 
 try {
