@@ -92,6 +92,8 @@ The script prints a JSON object on stdout:
   "registered_modules": ["acf/accordion", "acf/badges", "acf/cards", ...],
   "registry": { "source": "fresh|cache|stale-cache|none", "age_seconds": <int>, "count": <int>, "error": null },
   "dropped_unregistered": { "modules": [...], "templates": {...} },
+  "schema_paths": { "acf_schemas": "/Users/…/.cache/hp-wp/acf-schemas.md", "color_system": "/Users/…/.cache/hp-wp/color-system.md" },
+  "schema": { "source": "fresh|cache|stale-cache|bundled|skipped", "age_seconds": 0, "verified": true, "module_count": 31, "field_count": 447 },
   "modules": {
     "acf/textmodule": {
       "basic_instructions": "...",
@@ -121,6 +123,8 @@ The script prints a JSON object on stdout:
 **How to use this bundle (TOP-PRIORITY GUIDANCE):**
 
 0. **`registered_modules` is the hard allow-list.** It is fetched live from WordPress core (`/wp/v2/block-types?namespace=acf`) and lists the block types the theme registers *right now*. You may ONLY emit modules from this list. A module that is absent here is stored by WordPress but renders **nothing** on the page — no error, no container — which is exactly the silent-section bug this rule prevents. If a briefing, template, static reference file or few-shot example suggests a module that is not in `registered_modules`, pick the closest registered alternative (see the mapping table in `module-purpose-guide.md`) and mention the swap in one line. If `registered_modules` is `null` (registry unreachable), fall back to the module set in `acf-schemas.md` and tell the user that module existence could not be verified live.
+
+0b. **`schema_paths` tells you which files to read.** The ACF field definitions and the colour tokens are fetched live from WordPress on every run, because the theme gains and loses fields between plugin releases. Read the paths given in `schema_paths`, never the bundled `./references/acf-schemas.md` or `./references/color-system.md` directly — those are only the offline fallback, and `schema_paths` already points at them when the live fetch failed. If `schema.verified` is `false`, tell the user in one line that field keys could not be confirmed against WordPress and name `schema.source`; the publish script will refuse the upload.
 
 1. **Modules section** → for every module you select in later steps, look up its `basic_instructions`, `best_usage`, `other_instructions`. Treat these as **authoritative usage rules** that **override** anything in `module-purpose-guide.md`, `module-config-guide.md`, or `few-shot-examples.md`. Static reference files are fallback only — only consult them when the live bundle has nothing for that module.
 
@@ -159,7 +163,9 @@ Plan the module sequence considering:
 - For each module you tentatively pick, immediately consult its `modules[<slug>]` entry from the bundle. If `best_usage` indicates the module is wrong for this content, swap it for an alternative; if `basic_instructions` constrains how it must be configured, carry those constraints forward into Steps 2–6.
 
 ### Step 2: Color System & Design Context
-**Execute a simulated filesystem read** of `./references/module-config-guide.md` (Color System section).
+**Execute a simulated filesystem read** of the `schema_paths.color_system` file from Step 0.5 — this carries the live colour tokens and their hex values. Then read `./references/module-config-guide.md` (Color System section) for the contrast matrix, the per-module colour overrides and the rhythm rules, which are accessibility judgement rather than CMS data.
+
+If a colour token appears in `module-config-guide.md` but not in the live colour file, the theme no longer has it — do not use it.
 
 Plan the color rhythm across the full page:
 - Assign `background_color` and `text_color` for each planned module.
@@ -179,7 +185,9 @@ Plan the heading hierarchy before generating any markup:
 
 ### Step 4: Schema Retrieval
 You CANNOT guess ACF fields or IDs.
-**Execute a simulated filesystem read** of `./references/acf-schemas.md`. Load the required modules and their EXACT `field_xxxx` keys into memory.
+**Execute a simulated filesystem read** of the `schema_paths.acf_schemas` file from Step 0.5. Load the required modules and their EXACT `field_xxxx` keys into memory.
+
+> [!IMPORTANT] This file is fetched live from WordPress and is the only valid source of field keys. The bundled `./references/acf-schemas.md` is a stale fallback and must not be read when `schema_paths` names a different file. Field keys change whenever the theme changes: as of 2026-08-31 ten modules gained `overline`, `subline`, `outro`, `outro_button` and `outro_button_variation` fields that no release before 2.3.0 knew about.
 
 For `button_group` fields, check the available `Choices` values in the schema. Use ONLY values that exist in the choices list.
 
@@ -270,7 +278,7 @@ Each block is a SINGLE LINE — no line breaks inside the `<!-- wp:acf/modulenam
 printf '%s' "$RAW_MARKUP" | node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-blocks.mjs
 ```
 
-The script returns JSON: `{ valid, blocks, errors, warnings, registry, issues }`. It checks JSON syntax, schema completeness, HTML escaping, quote hygiene **and live module existence** (`registry.source` tells you whether the live block list was fresh, cached, stale or unavailable). An `unregistered_module` error can only be fixed by replacing the module. Pass `--offline` only when the user explicitly asks for schema-only validation without network access.
+The script returns JSON: `{ valid, blocks, errors, warnings, registry, schema, issues }`. It checks JSON syntax, schema completeness, HTML escaping, quote hygiene, **live module existence** and **live field-key freshness**. `registry.source` and `schema.source` tell you whether each live check was fresh, cached, stale or unavailable. An `unregistered_module` error can only be fixed by replacing the module; a `schema_unverified` warning means the field keys could not be confirmed and the draft upload will be refused. Pass `--offline` only when the user explicitly asks for bundled-schema validation without network access.
 
 - If `valid` is `true`: proceed to Step 9.
 - If `valid` is `false`: fix every issue with `severity: "error"` (each issue includes a `hint` with the exact field key and corrective action), regenerate the affected block(s), and re-run the validator. Cap at **2 retries**; on the third failure, surface the validator output to the user along with the partial markup so they can decide whether to paste manually anyway.
@@ -323,6 +331,7 @@ After Step 8 has rendered the markup AND the validator returned `valid: true`, d
    - On exit code **3** (network): print `✗ Could not reach WordPress (network or timeout). Markup is still on the clipboard if --both was used.`
    - On exit code **4** (validation): show the WP error message verbatim from stderr.
    - On exit code **5** (unregistered module): the publish script refused because the markup contains a module the live site does not register. Print the stderr message, go back to Step 6 and replace the module. Never pass `--force` unless the user explicitly asks to upload anyway.
+   - On exit code **6** (unverified schema): the publish script refused because the ACF field schema could not be verified against the live site, so field keys may be stale. Print the stderr message and tell the user to check their connection or credentials. Do not pass `--force` unless the user explicitly asks.
 
 **Both mode** runs clipboard first, then draft — so the user always has the markup locally even if the upload fails.
 

@@ -49,6 +49,19 @@ For every file path below, use the **Read** tool (or **Glob** for directory list
      - modules registered live but NOT in the schema → WARN "new modules without schema: …" (they cannot be generated until the schema is re-synced).
    - PASS when both sets match.
 
+8. **Live ACF schema** — run via Bash:
+   ```
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/wp-schema-fetcher.mjs --refresh
+   ```
+   - FAIL if `verified` is `false` — remedy: `/hp-wp:hp-config`, then retry.
+   - PASS otherwise. Report `module_count` and `field_count`.
+   - Then compare the live file at `acfPath` against the bundled
+     `skills/generate-hp-wp-page/references/acf-schemas.md`: list any module
+     whose field set differs, in either direction. WARN when they differ, with
+     the remedy "maintainer: run /hp-wp:hp-sync and release" — generation is
+     unaffected because it reads the live file, but the offline fallback is
+     behind.
+
 ## Output format
 
 ```
@@ -63,8 +76,9 @@ hp-wp doctor
 [PASS] WP API reachable        (HTTP 200 from /skill-version)
 [PASS] Marketplace reachable   (HTTP 200)
 [PASS] Module registry         (31 registered, schema in sync)
+[PASS] Live ACF schema         (31 modules, 447 fields, verified)
 
-Summary: 9 PASS, 0 WARN, 0 FAIL → all healthy.
+Summary: 10 PASS, 0 WARN, 0 FAIL → all healthy.
 ```
 
 If any check fails, include a one-line remedy under the failing line. Example for a missing reference file:
