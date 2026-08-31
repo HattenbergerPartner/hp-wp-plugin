@@ -149,8 +149,8 @@ These are the actual module sequences used on published pages. Use them as refer
 | :--- | :--- |
 | `acf/subheader` | 49 |
 | `acf/textmodule` | 28 |
+| `acf/accordion` | 13 |
 | `acf/contactextended` | 13 |
-| `acf/accordion` | 12 |
 | `acf/latestposts` | 12 |
 | `acf/image` | 11 |
 | `acf/endsidecontent` | 7 |
@@ -188,11 +188,11 @@ These pairs appear frequently together in sequence:
 | `acf/contactextended → acf/latestposts` | 4 |
 | `acf/textmodule → acf/image` | 4 |
 | `acf/image → acf/textmodule` | 4 |
+| `acf/image → acf/accordion` | 4 |
 | `acf/subheader → acf/textbadges` | 3 |
 | `acf/stepsscroll → acf/cardsfull` | 3 |
 | `acf/accordion → acf/contactextended` | 3 |
 | `acf/accordion → acf/image` | 3 |
-| `acf/image → acf/accordion` | 3 |
 | `acf/subheader → acf/texttext` | 2 |
 | `acf/contactextended → acf/accordion` | 2 |
 

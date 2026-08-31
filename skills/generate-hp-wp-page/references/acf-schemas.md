@@ -67,6 +67,9 @@ Custom example: <i>"linear-gradient(90deg, rgba(89, 131, 252, 1) 0%, rgba(96, 11
   - **** (`accordion`) -> Key: `field_617bde365d9af`
   - **title** (`text`) -> Key: `field_617bde635d9b0`
   - **content** (`wysiwyg`) -> Key: `field_617bde6b5d9b1`
+- **outro** (`wysiwyg`) -> Key: `field_617bdc94out01`
+- **outro_button** (`link`) -> Key: `field_617bdc94oub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_617bdc94ouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 - **** (`tab`) -> Key: `field_654a2998d7e66`
 - **background_color** (`button_group`) -> Key: `field_6362598d3bf39` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **text_color** (`button_group`) -> Key: `field_636259a13bf3a` -> Choices: `text-default` | `text-primary` | `text-white`
@@ -110,14 +113,19 @@ Small fixed option will reduce width and allow to align cards container.
 - **cards_container_alignment** (`button_group`) -> Key: `field_690e0fd06052d` -> Choices: `left` | `center` -> Default: `left`
 - **cards_image_first** (`true_false`) -> Key: `field_691b24853e4f4` -> Default: `0`
 - **** (`tab`) -> Key: `field_691b2fd5b4774`
+- **overline** (`text`) -> Key: `field_68df7aa7ovl01`
 - **headline** (`text`) -> Key: `field_68df7abe72635`
 - **headline_tag_selector** (`button_group`) -> Key: `field_68df7ac572636` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **subline** (`text`) -> Key: `field_68df7aa7sbl01`
 - **cards** (`repeater`) -> Key: `field_68df7ada72637`
   - **title** (`text`) -> Key: `field_68df7af072638`
   - **text** (`textarea`) -> Key: `field_68df7afc72639`
   - **image** (`image`) -> Key: `field_68df7b117263a`
   - **card_background_color** (`button_group`) -> Key: `field_68df7b217263b` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
   - **card_text_color** (`button_group`) -> Key: `field_68df7b327263c` -> Choices: `text-default` | `text-primary` | `text-white`
+- **outro** (`wysiwyg`) -> Key: `field_68df7aa7out01`
+- **outro_button** (`link`) -> Key: `field_68df7aa7oub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_68df7aa7ouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 
 ---
 
@@ -150,6 +158,7 @@ Small fixed option will reduce width and allow to align cards container.
 - **text_color** (`button_group`) -> Key: `field_ce9a8f66304ae` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 - **** (`tab`) -> Key: `field_ce9a8f66304af`
 - **headline_tag_selector** (`button_group`) -> Key: `field_ce9a8f66304b0` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **overline** (`text`) -> Key: `field_ce9a8f66ovl01`
 - **headline** (`text`) -> Key: `field_ce9a8f66304b1`
 - **introduction** (`textarea`) -> Key: `field_ce9a8f66304b2`
 - **** (`tab`) -> Key: `field_ce9a8f66304b9`
@@ -170,6 +179,9 @@ Small fixed option will reduce width and allow to align cards container.
   - **text** (`text`) -> Key: `field_ce9a8f66304bc`
 - **influences_items** (`repeater`) -> Key: `field_ce9a8f66304be`
   - **text** (`text`) -> Key: `field_ce9a8f66304bf`
+- **outro** (`wysiwyg`) -> Key: `field_ce9a8f66out01`
+- **outro_button** (`link`) -> Key: `field_ce9a8f66oub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_ce9a8f66ouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 
 ---
 
@@ -183,6 +195,7 @@ Small fixed option will reduce width and allow to align cards container.
 - **text_color** (`button_group`) -> Key: `field_cfull_7a2b9c21` -> Choices: `text-default` | `text-primary` | `text-white` -> Default: `text-default`
 - **** (`tab`) -> Key: `field_cfull_7a2b9c22`
 - **headline_tag_selector** (`button_group`) -> Key: `field_cfull_7a2b9c23` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **overline** (`text`) -> Key: `field_cfull_ovl01`
 - **headline** (`text`) -> Key: `field_cfull_7a2b9c24`
 - **introduction** (`textarea`) -> Key: `field_cfull_7a2b9c25`
 - **** (`tab`) -> Key: `field_cfull_7a2b9c26`
@@ -201,6 +214,9 @@ Small fixed option will reduce width and allow to align cards container.
   - **text** (`text`) -> Key: `field_cfull_7a2b9c30`
 - **influences_items** (`repeater`) -> Key: `field_cfull_7a2b9c31`
   - **text** (`text`) -> Key: `field_cfull_7a2b9c32`
+- **outro** (`wysiwyg`) -> Key: `field_cfull_out01`
+- **outro_button** (`link`) -> Key: `field_cfull_oub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_cfull_ouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 
 ---
 
@@ -261,6 +277,7 @@ Small fixed option will reduce width and allow to align cards container.
   - Instructions: Start color of the HELLO wordmark gradient. Same theme tokens as Background color.
 - **hello_gradient_end_color** (`button_group`) -> Key: `field_ce2a8f1100hg2` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
   - Instructions: End color of the HELLO wordmark gradient (100% stop). Same tokens as Background color. Leave empty to use white (#fff).
+- **overline** (`text`) -> Key: `field_ce2a8f11ovl01`
 - **headline** (`text`) -> Key: `field_ce2a8f11001e2`
 - **headline_tag_selector** (`button_group`) -> Key: `field_ce2a8f11001e3` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
 - **introduction** (`textarea`) -> Key: `field_ce2a8f1100int`
@@ -456,6 +473,9 @@ Multiselect will get default teaser texts.
   - **features** (`repeater`) -> Key: `field_699c70b9b72ee`
     - **icon** (`button_group`) -> Key: `field_699c70d2b72ef` -> Choices: `clock` | `thumbs-up` | `link` -> Default: `link`
     - **text** (`text`) -> Key: `field_699c7115b72f0`
+- **outro** (`wysiwyg`) -> Key: `field_698ef0eaout01`
+- **outro_button** (`link`) -> Key: `field_698ef0eaoub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_698ef0eaouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 - **** (`tab`) -> Key: `field_698ef4094abc0`
 - **card_signature** (`button_group`) -> Key: `field_698ef53d4abca` -> Choices: `number` | `icon` -> Default: `number`
 - **background_color** (`button_group`) -> Key: `field_698ef41e4abc1` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
@@ -531,6 +551,7 @@ Multiselect will get default teaser texts.
 ### Available Fields:
 - **** (`accordion`) -> Key: `field_6909be21bb7a9`
 - **headline_tag_selector** (`button_group`) -> Key: `field_6909be50bb7ab` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h1`
+- **overline** (`text`) -> Key: `field_6909be20ovl01`
 - **headline** (`text`) -> Key: `field_6909be40bb7aa`
 - **description** (`textarea`) -> Key: `field_6909be69bb7ac`
 - **image** (`image`) -> Key: `field_6909be81bb7ad`
@@ -546,6 +567,7 @@ Multiselect will get default teaser texts.
 - **** (`accordion`) -> Key: `field_680f676ef0420`
 - **** (`tab`) -> Key: `field_68b6e50cfa692`
 - **headline** (`text`) -> Key: `field_68b6e5c9fa698`
+- **subline** (`text`) -> Key: `field_680f676esbl01`
 - **teasers** (`repeater`) -> Key: `field_680f6833f0421`
   - **** (`accordion`) -> Key: `field_68b7f521da1da`
   - **single_headline** (`text`) -> Key: `field_68b6e53ffa694`
@@ -614,12 +636,14 @@ Multiselect will get default teaser texts.
 ### Available Fields:
 - **** (`accordion`) -> Key: `field_67e2a1b4c5d68`
 - **headline_tag_selector** (`button_group`) -> Key: `field_67e2a1b4c5d69` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **overline** (`text`) -> Key: `field_67e2a1b4ovl01`
 - **headline** (`text`) -> Key: `field_67e2a1b4c5d6a`
 - **description** (`textarea`) -> Key: `field_67e2a1b4c5d70`
 - **headline_alignment** (`button_group`) -> Key: `field_67e2a1b4c5d71` -> Choices: `left` | `center` -> Default: `left`
 - **bullets** (`repeater`) -> Key: `field_67e2a1b4c5d6b`
   - **title** (`text`) -> Key: `field_67e2a1b4c5d6c`
   - **text** (`wysiwyg`) -> Key: `field_67e2a1b4c5d6d`
+- **outro** (`wysiwyg`) -> Key: `field_67e2a1b4out01`
 - **cta** (`link`) -> Key: `field_67e2a1b4c5d6e`
 - **button_variation** (`button_group`) -> Key: `field_67e2a1b4c5d6f` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 
@@ -691,6 +715,7 @@ Multiselect will get default teaser texts.
 - **background_color** (`button_group`) -> Key: `field_680a4b8f3c90a` -> Choices: `bg-default` | `bg-primary` | `bg-primary-green` | `bg-primary-dark` | `bg-light-yellow`
 - **text_color** (`button_group`) -> Key: `field_680a4b8f3c90b` -> Choices: `text-default` | `text-primary` | `text-white`
 - **headline_tag_selector** (`button_group`) -> Key: `field_680a4b8f3c903` -> Choices: `h1` | `h2` | `h3` | `h4` | `h5` | `p` -> Default: `h2`
+- **overline** (`text`) -> Key: `field_680a4b8fovl01`
 - **headline** (`text`) -> Key: `field_680a4b8f3c904`
 - **description** (`textarea`) -> Key: `field_680a4b8f3c905`
 - **button** (`link`) -> Key: `field_680a4b8f3c906`
@@ -698,6 +723,9 @@ Multiselect will get default teaser texts.
 - **items** (`repeater`) -> Key: `field_680a4b8f3c907`
   - **title** (`text`) -> Key: `field_680a4b8f3c908`
   - **text** (`textarea`) -> Key: `field_680a4b8f3c909`
+- **outro** (`wysiwyg`) -> Key: `field_680a4b8fout01`
+- **outro_button** (`link`) -> Key: `field_680a4b8foub01`
+- **outro_button_variation** (`button_group`) -> Key: `field_680a4b8fouv01` -> Choices: `primary` | `secondary` | `link` -> Default: `secondary`
 
 ---
 
