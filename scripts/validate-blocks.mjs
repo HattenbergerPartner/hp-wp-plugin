@@ -20,7 +20,8 @@
  *      dropped section before it reaches the editor.
  *
  * Flags:
- *   --offline          Skip the live registry check (schema-only validation).
+ *   --offline          Skip both live checks (registry and ACF schema) and
+ *                      validate against the bundled schema only.
  *                      The result then carries `registry: {source:'skipped'}`
  *                      and a single `registry_unavailable` warning.
  *   --refresh-registry Force a fresh block-type fetch (bypass 1h cache).
@@ -34,6 +35,7 @@
 
 import { loadSchemas } from './schema-loader.mjs';
 import { loadRegistry } from './wp-block-registry.mjs';
+import { loadSchemaBundle } from './wp-schema-fetcher.mjs';
 
 const BLOCK_RE = /<!--\s*wp:acf\/([a-z0-9_-]+)\s+(\{[\s\S]*?\})\s*\/-->/g;
 
@@ -176,7 +178,10 @@ const offline = argv.includes('--offline');
 const refreshRegistry = argv.includes('--refresh-registry');
 
 const input = await readStdin();
-const schemas = loadSchemas();
+const schemaBundle = offline
+    ? { acfPath: undefined, source: 'skipped', verified: false, age_seconds: null, module_count: 0, error: null }
+    : await loadSchemaBundle({ refresh: refreshRegistry });
+const schemas = loadSchemas(schemaBundle.acfPath);
 const registry = offline
     ? { slugs: null, list: [], source: 'skipped', age_seconds: null, error: null }
     : await loadRegistry({ refresh: refreshRegistry });
@@ -202,6 +207,19 @@ if (registry.slugs === null) {
         code: 'registry_stale',
         message: `live module registry unreachable (${registry.error}); using cached list from ${registry.fetched_at}`,
         hint: 'results are only as current as that cache',
+    });
+}
+
+if (!schemaBundle.verified) {
+    issues.push({
+        block: 0,
+        module: null,
+        severity: 'warn',
+        code: 'schema_unverified',
+        message: schemaBundle.source === 'skipped'
+            ? 'live ACF schema skipped — field keys were NOT verified against WordPress'
+            : `live ACF schema unavailable (${schemaBundle.error || schemaBundle.source}) — field keys came from the ${schemaBundle.source} copy`,
+        hint: 'a field key the theme no longer has is stored but never rendered; run /hp-wp:hp-config and re-validate before uploading',
     });
 }
 
@@ -285,6 +303,12 @@ const result = {
         source: registry.source,
         age_seconds: registry.age_seconds,
         count: registry.list.length,
+    },
+    schema: {
+        source: schemaBundle.source,
+        age_seconds: schemaBundle.age_seconds,
+        verified: schemaBundle.verified,
+        module_count: schemaBundle.module_count,
     },
     issues,
 };
