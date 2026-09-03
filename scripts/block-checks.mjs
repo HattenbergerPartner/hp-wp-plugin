@@ -131,3 +131,100 @@ export function checkQuoteHygiene(data) {
     });
     return issues;
 }
+
+const PLACEHOLDER_RE = /\[[A-ZÄÖÜ][A-ZÄÖÜ0-9 _-]{2,}(?::|\])/;
+
+function* stringValues(data, prefix = '') {
+    for (const [k, v] of Object.entries(data || {})) {
+        if (k.startsWith('_')) continue;
+        if (typeof v === 'string') yield [prefix + k, v];
+        else if (v && typeof v === 'object' && !Array.isArray(v)) yield* stringValues(v, `${prefix}${k}.`);
+    }
+}
+
+export function checkPlaceholderMarkers(data) {
+    const issues = [];
+    for (const [field, value] of stringValues(data)) {
+        const m = value.match(PLACEHOLDER_RE);
+        if (!m) continue;
+        const marker = value.slice(m.index, m.index + 60);
+        issues.push({
+            severity: 'warn',
+            code: 'placeholder_marker',
+            field,
+            message: `field "${field}" contains an editorial placeholder: ${marker}${value.length > m.index + 60 ? '…' : ''}`,
+            hint: 'resolve or remove the bracketed marker before the page goes live',
+        });
+    }
+    return issues;
+}
+
+function knownNames(module) {
+    const names = new Set(module.fields.map(f => f.name));
+    const repeaters = new Set();
+    for (const [rName, r] of Object.entries(module.repeaters || {})) {
+        repeaters.add(rName);
+        for (const s of r.subFields) {
+            names.add(s.name);
+            if (s.type === 'repeater') repeaters.add(s.name);
+        }
+    }
+    return { names, repeaters };
+}
+
+/** Strip `<repeater>_<n>_` prefixes until the remainder is a known field name. */
+function isKnownKey(base, known) {
+    let rest = base;
+    for (let guard = 0; guard < 6; guard++) {
+        if (known.names.has(rest)) return true;
+        const m = rest.match(/^([a-z0-9_]+?)_(\d+)_(.+)$/);
+        if (!m || !known.repeaters.has(m[1])) return false;
+        rest = m[3];
+    }
+    return false;
+}
+
+export function checkUnknownFields(module, data) {
+    const known = knownNames(module);
+    const issues = [];
+    for (const key of Object.keys(data || {})) {
+        const base = key.startsWith('_') ? key.slice(1) : key;
+        if (isKnownKey(base, known)) continue;
+        if (key.startsWith('_')) continue; // report the value key once; its mapping is implied
+        const mapped = data[`_${key}`];
+        issues.push({
+            severity: 'warn',
+            code: 'unknown_field',
+            field: key,
+            message: `key "${key}"${mapped ? ` (mapped to ${mapped})` : ''} is not in the live schema for this module — the theme ignores it`,
+            hint: 'remove it, or if it is new, the schema cache is stale: re-run Step 0.5 with --refresh-context',
+        });
+    }
+    return issues;
+}
+
+export function checkMaxlength(module, data) {
+    const issues = [];
+    const push = (field, len, max) => issues.push({
+        severity: 'warn',
+        code: 'maxlength_exceeded',
+        field,
+        message: `field "${field}" has ${len} characters, schema allows ${max}`,
+        hint: 'shorten the value; this field is designed for short text',
+    });
+    for (const f of module.fields) {
+        if (!f.maxlength) continue;
+        const v = data[f.name];
+        if (typeof v === 'string' && v.length > f.maxlength) push(f.name, v.length, f.maxlength);
+    }
+    for (const [rName, r] of Object.entries(module.repeaters || {})) {
+        for (const s of r.subFields) {
+            if (!s.maxlength) continue;
+            const re = new RegExp(`^${rName}_\\d+_${s.name}$`);
+            for (const [k, v] of Object.entries(data || {})) {
+                if (re.test(k) && typeof v === 'string' && v.length > s.maxlength) push(k, v.length, s.maxlength);
+            }
+        }
+    }
+    return issues;
+}

@@ -18,6 +18,13 @@
  *      whose module was removed from the theme is stored fine and rendered
  *      as NOTHING, so this is the only check that catches a silently
  *      dropped section before it reaches the editor.
+ *   6. Placeholder markers (warn)    — `placeholder_marker`: an editorial
+ *      marker such as [ÜBERPRÜFEN: …], [ANNAHME: …] or [TODO] is still in a
+ *      string value.
+ *   7. Unknown field keys (warn)     — `unknown_field`: a `data` key that the
+ *      live schema does not declare for this module (the theme ignores it).
+ *   8. Max length (warn)             — `maxlength_exceeded`: a string value
+ *      is longer than the field's ACF `maxlength`, where one is set.
  *
  * Flags:
  *   --offline          Skip both live checks (registry and ACF schema) and
@@ -38,6 +45,7 @@ import { loadRegistry } from './wp-block-registry.mjs';
 import { loadSchemaBundle } from './wp-schema-fetcher.mjs';
 import {
     findUnescapedQuote, checkSchemaCompleteness, checkHtmlEscapeRaw, checkQuoteHygiene,
+    checkPlaceholderMarkers, checkUnknownFields, checkMaxlength,
 } from './block-checks.mjs';
 
 const BLOCK_RE = /<!--\s*wp:acf\/([a-z0-9_-]+)\s+(\{[\s\S]*?\})\s*\/-->/g;
@@ -166,6 +174,15 @@ while ((match = re.exec(input)) !== null) {
         issues.push({ block: blockIndex, module: moduleName, ...issue });
     }
     for (const issue of checkQuoteHygiene(data)) {
+        issues.push({ block: blockIndex, module: moduleName, ...issue });
+    }
+    for (const issue of checkPlaceholderMarkers(data)) {
+        issues.push({ block: blockIndex, module: moduleName, ...issue });
+    }
+    for (const issue of checkUnknownFields(module, data)) {
+        issues.push({ block: blockIndex, module: moduleName, ...issue });
+    }
+    for (const issue of checkMaxlength(module, data)) {
         issues.push({ block: blockIndex, module: moduleName, ...issue });
     }
 }
