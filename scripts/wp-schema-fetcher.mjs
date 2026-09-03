@@ -58,7 +58,10 @@ function ttlSeconds(override) {
 }
 
 function readMeta() {
-    if (!existsSync(META_PATH) || !existsSync(CACHED_ACF_PATH) || !existsSync(CACHED_COLOR_PATH)) return null;
+    // Any missing file means the cache was written by an older version (e.g. 2.3.0 had
+    // no module-skeletons.md); treat it as no cache so we refetch or fall back to bundled.
+    const files = [META_PATH, CACHED_ACF_PATH, CACHED_COLOR_PATH, CACHED_SKELETON_PATH];
+    if (files.some(p => !existsSync(p))) return null;
     try {
         const raw = JSON.parse(readFileSync(META_PATH, 'utf8'));
         return raw?.fetched_at ? raw : null;
