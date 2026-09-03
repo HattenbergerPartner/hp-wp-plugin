@@ -11,7 +11,7 @@
  *   {
  *     blockName: "accordion",            // matches `acf/<blockName>` in markup
  *     fields: [
- *       { name, key, type, choices?, default? },
+ *       { name, key, type, choices?, default?, newLines?, maxlength? },
  *       ...
  *     ],
  *     repeaters: {
@@ -46,6 +46,8 @@ const BLOCK_NAME_RE = /^\*\*Gutenberg Block Name:\*\* `acf\/([a-z0-9_-]+)`/;
 const FIELD_LINE_RE = /^(\s*)- \*\*([^*]*)\*\* \(`([^`]+)`\) -> Key: `([^`]+)`(.*)$/;
 const CHOICES_RE = /-> Choices: (.+?)(?: -> Default:|$)/;
 const DEFAULT_RE = /-> Default: `([^`]*)`/;
+const LINE_BREAKS_RE = /-> Line breaks: `(none|br|wpautop)`/;
+const MAXLENGTH_RE = /-> Max length: `(\d+)`/;
 
 const UI_TYPES = new Set(['tab', 'accordion', 'group', 'message']);
 
@@ -58,6 +60,16 @@ function parseChoices(tail) {
 function parseDefault(tail) {
     const m = tail.match(DEFAULT_RE);
     return m ? m[1] : undefined;
+}
+
+function parseLineBreaks(tail) {
+    const m = tail.match(LINE_BREAKS_RE);
+    return m ? m[1] : undefined;
+}
+
+function parseMaxlength(tail) {
+    const m = tail.match(MAXLENGTH_RE);
+    return m ? Number.parseInt(m[1], 10) : undefined;
 }
 
 export function loadSchemas(path = DEFAULT_SCHEMA_PATH) {
@@ -108,6 +120,8 @@ export function loadSchemas(path = DEFAULT_SCHEMA_PATH) {
             type,
             choices: parseChoices(tail),
             default: parseDefault(tail),
+            newLines: parseLineBreaks(tail),
+            maxlength: parseMaxlength(tail),
         };
 
         if (!isNested) {
