@@ -3,7 +3,7 @@ description: (Maintainers only) Regenerate skill references from the live WordPr
 allowed-tools: Read, Bash(node:*), Bash(test:*), Bash(pwd), Glob
 ---
 
-Maintainer-only command. Refreshes `references/acf-schemas.md`, `references/color-system.md`, and `references/page-patterns.md` from the live WordPress REST API.
+Maintainer-only command. Refreshes `references/acf-schemas.md`, `references/color-system.md`, `references/page-patterns.md`, and `references/module-skeletons.md` from the live WordPress REST API.
 
 ## Pre-flight
 
@@ -27,7 +27,7 @@ If pre-flight passed, run via Bash:
 node sync-acf-context.js --wp-env
 ```
 
-This pulls live ACF schemas, theme colors, and page patterns. The sync writes the auto-generated reference files (`acf-schemas.md`, `color-system.md`, `page-patterns.md`) directly into `plugin/skills/generate-hp-wp-page/references/`. Manual reference files (`module-config-guide.md`, `module-purpose-guide.md`, `few-shot-examples.md`) in that same directory are NOT touched — edit them directly when documentation changes.
+This pulls live ACF schemas, theme colors, and page patterns. The sync writes the auto-generated reference files (`acf-schemas.md`, `color-system.md`, `page-patterns.md`, `module-skeletons.md`) directly into `plugin/skills/generate-hp-wp-page/references/`. Manual reference files (`module-config-guide.md`, `module-purpose-guide.md`, `few-shot-examples.md`) in that same directory are NOT touched — edit them directly when documentation changes.
 
 ## Post-sync reminder
 

@@ -61,6 +61,9 @@ For every file path below, use the **Read** tool (or **Glob** for directory list
      the remedy "maintainer: run /hp-wp:hp-sync and release" — generation is
      unaffected because it reads the live file, but the offline fallback is
      behind.
+   - Report `line-break info: yes/no` — `yes` when the cached `acf-schemas.md`
+     contains the string `Line breaks:`; `no` means the WP-side API is older
+     than 2.4.0 and needs `./deploy-plugin.sh`.
 
 ## Output format
 

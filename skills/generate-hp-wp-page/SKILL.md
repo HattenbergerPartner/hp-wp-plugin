@@ -124,7 +124,7 @@ The script prints a JSON object on stdout:
 
 0. **`registered_modules` is the hard allow-list.** It is fetched live from WordPress core (`/wp/v2/block-types?namespace=acf`) and lists the block types the theme registers *right now*. You may ONLY emit modules from this list. A module that is absent here is stored by WordPress but renders **nothing** on the page — no error, no container — which is exactly the silent-section bug this rule prevents. If a briefing, template, static reference file or few-shot example suggests a module that is not in `registered_modules`, pick the closest registered alternative (see the mapping table in `module-purpose-guide.md`) and mention the swap in one line. If `registered_modules` is `null` (registry unreachable), fall back to the module set in `acf-schemas.md` and tell the user that module existence could not be verified live.
 
-0b. **`schema_paths` tells you which files to read.** The ACF field definitions and the colour tokens are fetched live from WordPress on every run, because the theme gains and loses fields between plugin releases. Read the paths given in `schema_paths`, never the bundled `./references/acf-schemas.md` or `./references/color-system.md` directly — those are only the offline fallback, and `schema_paths` already points at them when the live fetch failed. If `schema.verified` is `false`, tell the user in one line that field keys could not be confirmed against WordPress and name `schema.source`; the publish script will refuse the upload.
+0b. **`schema_paths` tells you which files to read.** The ACF field definitions and the colour tokens are fetched live from WordPress on every run, because the theme gains and loses fields between plugin releases. Read the paths given in `schema_paths`, never the bundled `./references/acf-schemas.md` or `./references/color-system.md` directly — those are only the offline fallback, and `schema_paths` already points at them when the live fetch failed. If `schema.verified` is `false`, tell the user in one line that field keys could not be confirmed against WordPress and name `schema.source`; the publish script will refuse the upload. `schema_paths.module_skeletons` holds one complete, valid block per registered module. **Start every block from its skeleton.**
 
 1. **Modules section** → for every module you select in later steps, look up its `basic_instructions`, `best_usage`, `other_instructions`. Treat these as **authoritative usage rules** that **override** anything in `module-purpose-guide.md`, `module-config-guide.md`, or `few-shot-examples.md`. Static reference files are fallback only — only consult them when the live bundle has nothing for that module.
 
@@ -226,18 +226,19 @@ Generate the JSON payload for each module. Apply the configuration decisions:
 - Set alignment, image ratio, and variant fields according to the config guide.
 - For repeater fields, use the correct `{name}_{index}_{field}` syntax.
 - Include the repeater count field (e.g., `"cards":3`, `"teasers":3`).
-- **Use the matching example in `few-shot-examples.md` as a complete template for each module.** Do not remove fields the example shows, even if the briefing didn't mention them.
+- **Start from the module's skeleton in `schema_paths.module_skeletons` and fill it in.** Keep every key it shows (empty if unused) and never add keys it does not show. `few-shot-examples.md` is for prose style and typical values only — its field lists may be older than the live schema.
 
 > [!IMPORTANT] German typographic quotes
 > When generating German content, use typographic quotes: `„` (U+201E) opening + `"` (U+201C) closing. NEVER use ASCII `"` inside string content — the closing ASCII `"` will terminate the JSON string and break the block. Symptom: a single `„word"` pair somewhere in the page reduces multiple downstream blocks to empty stubs. If straight ASCII quotes are unavoidable, JSON-escape them as `\"`.
 
-> [!IMPORTANT] No `<p>` wrappers in content fields
-> Do NOT wrap text in `<p>...</p>` paragraphs. ACF wysiwyg fields run `wpautop()` at render time and convert plain text with blank-line separators (`\n\n`) into proper paragraphs automatically. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug.
+> [!IMPORTANT] No `<p>` wrappers — line breaks depend on the field type
+> Never wrap text in `<p>…</p>`. Which separator to use depends on the field type shown in acf-schemas.md:
 >
-> - Single paragraph: `"content":"Just plain text."` (no tags at all)
-> - Multiple paragraphs: `"content":"First paragraph.\n\nSecond paragraph.\n\nThird paragraph."` — `\n\n` is two literal newlines in the JSON string, which JSON encodes as `\n\n`. wpautop renders each chunk as its own `<p>`.
+> - **wysiwyg**: `\n\n` between paragraphs; WordPress runs `wpautop()` and makes each chunk a `<p>`.
+> - **textarea**: follow its `Line breaks:` annotation. `none` = one paragraph only, a hard break needs a literal `\u003cbr\u003e` (escaped, see below); `br` = `\n` is a line break and `\n\n` a blank line; `wpautop` = like wysiwyg.
+> - **text**: single line, no breaks.
 >
-> This applies to every wysiwyg / textarea / repeater content field. Saves an entire class of escape errors.
+> `\n` in the JSON string is the two-character escape, exactly as JSON encodes a newline. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug.
 
 > [!IMPORTANT] HTML escape for legitimate inline tags
 > Plain text and `\n\n` paragraphs need NO HTML at all. Only emit tags when the content actually requires inline semantics:
@@ -246,9 +247,9 @@ Generate the JSON payload for each module. Apply the configuration decisions:
 > - Inline links: `<a href="...">...</a>`
 > - Hard line break inside a paragraph: `<br>`
 >
-> When you DO need a tag, every literal `<` MUST be `<` and every `>` MUST be `>` (Unicode escapes that the JSON parser decodes back to `<`/`>`). Example:
+> When you DO need a tag, every literal `<` MUST be `\u003c` and every `>` MUST be `\u003e` (Unicode escapes that the JSON parser decodes back to `<`/`>`). Example:
 > - Wrong: `"content":"<ul><li>Item</li></ul>"`
-> - Right: `"content":"<ul><li>Item</li></ul>"`
+> - Right: `"content":"\u003cul\u003e\u003cli\u003eItem\u003c/li\u003e\u003c/ul\u003e"`
 >
 > This matches Gutenberg's native block serializer and is required for the `--draft` upload path; raw `<`/`>` may survive a quick manual paste but is silently corrupted by the WP REST API content sanitizer.
 
@@ -279,6 +280,8 @@ printf '%s' "$RAW_MARKUP" | node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-blocks.m
 ```
 
 The script returns JSON: `{ valid, blocks, errors, warnings, registry, schema, issues }`. It checks JSON syntax, schema completeness, HTML escaping, quote hygiene, **live module existence** and **live field-key freshness**. `registry.source` and `schema.source` tell you whether each live check was fresh, cached, stale or unavailable. An `unregistered_module` error can only be fixed by replacing the module; a `schema_unverified` warning means the field keys could not be confirmed and the draft upload will be refused. Pass `--offline` only when the user explicitly asks for bundled-schema validation without network access.
+
+- `placeholder_marker`, `unknown_field`, `maxlength_exceeded` are **warnings**: they do not block `--draft`, but list every one to the user verbatim before uploading. `unknown_field` means a key the theme will ignore — remove it. `placeholder_marker` means bracketed editorial notes are still in the copy.
 
 - If `valid` is `true`: proceed to Step 9.
 - If `valid` is `false`: fix every issue with `severity: "error"` (each issue includes a `hint` with the exact field key and corrective action), regenerate the affected block(s), and re-run the validator. Cap at **2 retries**; on the third failure, surface the validator output to the user along with the partial markup so they can decide whether to paste manually anyway.
