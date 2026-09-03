@@ -21,6 +21,7 @@ For every file path below, use the **Read** tool (or **Glob** for directory list
    - `skills/generate-hp-wp-page/references/acf-schemas.md`
    - `skills/generate-hp-wp-page/references/color-system.md`
    - `skills/generate-hp-wp-page/references/page-patterns.md`
+   - `skills/generate-hp-wp-page/references/module-skeletons.md`
 
 3. **Command files present** (Glob `${CLAUDE_PLUGIN_ROOT}/commands/*.md`):
    - `hp-page.md`, `hp-update.md`, `hp-status.md`, `hp-doctor.md`, `hp-sync.md`
@@ -87,6 +88,6 @@ Summary: 10 PASS, 0 WARN, 0 FAIL → all healthy.
 If any check fails, include a one-line remedy under the failing line. Example for a missing reference file:
 
 ```
-[FAIL] References              (5/6 present — missing acf-schemas.md)
+[FAIL] References              (6/7 present — missing acf-schemas.md)
        → Run /hp-update to refetch, or /hp-sync if you're a maintainer.
 ```

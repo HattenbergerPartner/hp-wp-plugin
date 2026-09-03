@@ -92,7 +92,7 @@ The script prints a JSON object on stdout:
   "registered_modules": ["acf/accordion", "acf/badges", "acf/cards", ...],
   "registry": { "source": "fresh|cache|stale-cache|none", "age_seconds": <int>, "count": <int>, "error": null },
   "dropped_unregistered": { "modules": [...], "templates": {...} },
-  "schema_paths": { "acf_schemas": "/Users/…/.cache/hp-wp/acf-schemas.md", "color_system": "/Users/…/.cache/hp-wp/color-system.md" },
+  "schema_paths": { "acf_schemas": "/Users/…/.cache/hp-wp/acf-schemas.md", "color_system": "/Users/…/.cache/hp-wp/color-system.md", "module_skeletons": "/Users/…/.cache/hp-wp/module-skeletons.md" },
   "schema": { "source": "fresh|cache|stale-cache|bundled|skipped", "age_seconds": 0, "verified": true, "module_count": 31, "field_count": 447 },
   "modules": {
     "acf/textmodule": {
@@ -143,8 +143,8 @@ The script prints a JSON object on stdout:
 
 > [!IMPORTANT] Precedence order
 > 0. `registered_modules` (live block registry) — absolute; nothing below may add a module that isn't in it.
-> 1. Live WP context (this Step 0.5 bundle) — always wins on conflicts.
-> 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover. `schema_paths.module_skeletons` is the field list for every block; `few-shot-examples.md` is wording and typical values only and never overrides the skeleton.
+> 1. Live WP context (this Step 0.5 bundle) — always wins on conflicts. `schema_paths.module_skeletons` is the field list for every block.
+> 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover. `few-shot-examples.md` is wording and typical values only and never overrides the skeleton.
 > 3. Your own training-data heuristics — only when both above are silent.
 
 The bundle is cached at `~/.cache/hp-wp/wp-context.json` for 1 hour. To force a fresh fetch in this run, the user passes `--refresh-context` to `/hp-page` (which propagates to `wp-context-fetcher.mjs --refresh`).
@@ -267,7 +267,7 @@ Verify the generated output against ALL previous steps:
 10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery — including `unregistered_module`, which means the module does not exist on the live site and must be swapped, not worked around.
 
 ### Step 8: Output Formatting
-**Execute a simulated filesystem read** of the `schema_paths.module_skeletons` file from Step 0.5 and verify every block against its module's skeleton: the same key set (no missing keys, no extra keys), every `_key` mapping identical, and the one-line wrapper `<!-- wp:acf/... {...} /-->`. `./references/few-shot-examples.md` shows only the outer convention — the whole output inside one ```html fenced code block.
+**Execute a simulated filesystem read** of the `schema_paths.module_skeletons` file from Step 0.5 and verify every block against its module's skeleton: the same key set — no missing keys, and no keys outside the skeleton apart from additional repeater rows (`<repeater>_1_…`, `<repeater>_2_…`) — every `_key` mapping identical, and the one-line wrapper `<!-- wp:acf/... {...} /-->`. `./references/few-shot-examples.md` shows only the outer convention — the whole output inside one ```html fenced code block.
 
 Your final output must consist exclusively of valid HTML comment structures wrapping valid JSON payloads. ALWAYS wrap your output in an ```html markdown block so the user can easily copy it from their IDE chat view. Do not output conversational filler.
 

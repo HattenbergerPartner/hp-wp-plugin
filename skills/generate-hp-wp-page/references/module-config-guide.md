@@ -25,14 +25,15 @@ NEVER use ASCII `"` (U+0022) inside string content. The closing ASCII `"` will t
 
 If straight ASCII quotes are unavoidable (e.g. for code samples), JSON-escape them as `\"`.
 
-### 3a. No `<p>` wrappers — let wpautop do its job
+### 3a. No `<p>` wrappers — line breaks depend on the field type
 
-Do NOT wrap content text in `<p>...</p>`. ACF wysiwyg fields run `wpautop()` at render time and convert plain text into paragraphs automatically. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug — eliminate it from every content / wysiwyg / textarea / repeater field.
+Never wrap text in `<p>…</p>`. Which separator to use depends on the field type shown in acf-schemas.md:
 
-- Single paragraph: `"content":"Just plain text."` (no tags at all)
-- Multiple paragraphs: `"content":"First paragraph.\n\nSecond paragraph.\n\nThird paragraph."` — `\n\n` is two literal newlines in the JSON, which JSON encodes as `\n\n`. wpautop wraps each chunk as its own `<p>`.
+- **wysiwyg**: `\n\n` between paragraphs; WordPress runs `wpautop()` and makes each chunk a `<p>`.
+- **textarea**: follow its `Line breaks:` annotation. `none` = one paragraph only, a hard break needs a literal `\u003cbr\u003e` (escaped, see 3b); `br` = `\n` is a line break and `\n\n` a blank line; `wpautop` = like wysiwyg.
+- **text**: single line, no breaks.
 
-If you find yourself typing `<p>` in any content field, stop and remove it.
+`\n` in the JSON string is the two-character escape, exactly as JSON encodes a newline. Emitting `<p>` manually is redundant and is the single largest source of the empty-block bug. If you find yourself typing `<p>` in any content field, stop and remove it.
 
 ### 3b. HTML escape for legitimate inline tags only
 
@@ -42,10 +43,10 @@ Plain text and `\n\n` paragraphs need NO HTML at all. Only emit tags when the co
 - Inline links: `<a href="...">...</a>`
 - Hard line break inside a paragraph: `<br>`
 
-When you DO need a tag, every literal `<` MUST be `<` and every `>` MUST be `>` (Unicode escapes the JSON parser decodes back to `<`/`>`). This matches Gutenberg's native block serializer and survives the WP REST API content sanitizer on the `--draft` upload path.
+When you DO need a tag, every literal `<` MUST be `\u003c` and every `>` MUST be `\u003e` (Unicode escapes that the JSON parser decodes back to `<`/`>`). This matches Gutenberg's native block serializer and is required for the `--draft` upload path; raw `<`/`>` may survive a quick manual paste but is silently corrupted by the WP REST API content sanitizer.
 
-- Wrong: `"content":"<ul><li>Item one</li><li>Item two</li></ul>"`
-- Right: `"content":"<ul><li>Item one</li><li>Item two</li></ul>"`
+- Wrong: `"content":"<ul><li>Item</li></ul>"`
+- Right: `"content":"\u003cul\u003e\u003cli\u003eItem\u003c/li\u003e\u003c/ul\u003e"`
 
 Plain text without HTML is unaffected by this rule.
 
