@@ -226,7 +226,7 @@ Generate the JSON payload for each module. Apply the configuration decisions:
 - Set alignment, image ratio, and variant fields according to the config guide.
 - For repeater fields, use the correct `{name}_{index}_{field}` syntax.
 - Include the repeater count field (e.g., `"cards":3`, `"teasers":3`).
-- **Start from the module's skeleton in `schema_paths.module_skeletons` and fill it in.** Keep every key it shows (empty if unused) and never add keys it does not show. `few-shot-examples.md` is for prose style and typical values only — its field lists may be older than the live schema.
+- **Start from the module's skeleton in `schema_paths.module_skeletons` and fill it in.** Keep every key it shows (empty if unused) and never add keys it does not show, apart from additional repeater rows (`<repeater>_1_…`, `<repeater>_2_…`). `few-shot-examples.md` is for prose style and typical values only — its field lists may be older than the live schema.
 
 > [!IMPORTANT] German typographic quotes
 > When generating German content, use typographic quotes: `„` (U+201E) opening + `"` (U+201C) closing. NEVER use ASCII `"` inside string content — the closing ASCII `"` will terminate the JSON string and break the block. Symptom: a single `„word"` pair somewhere in the page reduces multiple downstream blocks to empty stubs. If straight ASCII quotes are unavoidable, JSON-escape them as `\"`.

@@ -74,7 +74,7 @@ hp-wp doctor
 [PASS] Plugin manifest         (.claude-plugin/plugin.json valid, name=hp-wp)
 [PASS] Runtime manifest        (manifest.json valid)
 [PASS] Skill SKILL.md          (present)
-[PASS] References              (6/6 present)
+[PASS] References              (7/7 present)
 [PASS] Commands                (5/5 present)
 [PASS] Hooks                   (session-start hook registered)
 [PASS] WP API reachable        (HTTP 200 from /skill-version)
