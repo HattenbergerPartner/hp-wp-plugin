@@ -144,7 +144,7 @@ The script prints a JSON object on stdout:
 > [!IMPORTANT] Precedence order
 > 0. `registered_modules` (live block registry) — absolute; nothing below may add a module that isn't in it.
 > 1. Live WP context (this Step 0.5 bundle) — always wins on conflicts.
-> 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover.
+> 2. Static reference files (`module-purpose-guide.md`, `module-config-guide.md`, `acf-schemas.md`, `few-shot-examples.md`) — fallback for anything the live context doesn't cover. `schema_paths.module_skeletons` is the field list for every block; `few-shot-examples.md` is wording and typical values only and never overrides the skeleton.
 > 3. Your own training-data heuristics — only when both above are silent.
 
 The bundle is cached at `~/.cache/hp-wp/wp-context.json` for 1 hour. To force a fresh fetch in this run, the user passes `--refresh-context` to `/hp-page` (which propagates to `wp-context-fetcher.mjs --refresh`).
@@ -267,7 +267,7 @@ Verify the generated output against ALL previous steps:
 10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery — including `unregistered_module`, which means the module does not exist on the live site and must be swapped, not worked around.
 
 ### Step 8: Output Formatting
-**Execute a simulated filesystem read** of `./references/few-shot-examples.md` to verify your JSON wrapping matches the exact syntax.
+**Execute a simulated filesystem read** of the `schema_paths.module_skeletons` file from Step 0.5 and verify every block against its module's skeleton: the same key set (no missing keys, no extra keys), every `_key` mapping identical, and the one-line wrapper `<!-- wp:acf/... {...} /-->`. `./references/few-shot-examples.md` shows only the outer convention — the whole output inside one ```html fenced code block.
 
 Your final output must consist exclusively of valid HTML comment structures wrapping valid JSON payloads. ALWAYS wrap your output in an ```html markdown block so the user can easily copy it from their IDE chat view. Do not output conversational filler.
 
