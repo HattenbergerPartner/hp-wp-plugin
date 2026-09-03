@@ -13,6 +13,7 @@
  *
  * Cache:  ~/.cache/hp-wp/acf-schemas.md
  *         ~/.cache/hp-wp/color-system.md
+ *         ~/.cache/hp-wp/module-skeletons.md
  *         ~/.cache/hp-wp/schema-meta.json      (all mode 600)
  * TTL:    1 hour, override with HP_SCHEMA_TTL (seconds).
  * Skip:   HP_SKIP_SCHEMA=1 disables network and cache (tests).
@@ -29,7 +30,7 @@ import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadCredentials } from './env-loader.mjs';
-import { renderAcfSchemas, renderColorSystem } from './schema-renderer.mjs';
+import { renderAcfSchemas, renderColorSystem, renderModuleSkeletons } from './schema-renderer.mjs';
 
 const TIMEOUT_MS = 15000;
 const DEFAULT_TTL_SECONDS = 3600;
@@ -39,11 +40,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const SCHEMA_CACHE_DIR = join(homedir(), '.cache', 'hp-wp');
 const CACHED_ACF_PATH = join(SCHEMA_CACHE_DIR, 'acf-schemas.md');
 const CACHED_COLOR_PATH = join(SCHEMA_CACHE_DIR, 'color-system.md');
+const CACHED_SKELETON_PATH = join(SCHEMA_CACHE_DIR, 'module-skeletons.md');
 const META_PATH = join(SCHEMA_CACHE_DIR, 'schema-meta.json');
 
 const REFERENCES_DIR = join(__dirname, '..', 'skills', 'generate-hp-wp-page', 'references');
 export const BUNDLED_ACF_PATH = join(REFERENCES_DIR, 'acf-schemas.md');
 export const BUNDLED_COLOR_PATH = join(REFERENCES_DIR, 'color-system.md');
+export const BUNDLED_SKELETON_PATH = join(REFERENCES_DIR, 'module-skeletons.md');
 
 const ACF_ENDPOINT = '/wp-json/hp-skill/v1/acf-schemas';
 const THEME_ENDPOINT = '/wp-json/hp-skill/v1/theme-options';
@@ -67,6 +70,10 @@ function readMeta() {
 function ageSeconds(meta) {
     const t = Date.parse(meta?.fetched_at || '');
     return Number.isNaN(t) ? Infinity : Math.floor((Date.now() - t) / 1000);
+}
+
+function blockGroup(g) {
+    return (g?.location || []).some(rg => Array.isArray(rg) && rg.some(r => r?.param === 'block'));
 }
 
 function countFields(groups) {
@@ -116,8 +123,10 @@ async function fetchAndRender({ baseUrl, user, pass }) {
     return {
         acfMarkdown: renderAcfSchemas(groups),
         colorMarkdown: renderColorSystem(themeOptions),
+        skeletonMarkdown: renderModuleSkeletons(groups),
         module_count: moduleCount,
         field_count: countFields(groups),
+        skeleton_count: groups.filter(g => blockGroup(g)).length,
     };
 }
 
@@ -125,13 +134,15 @@ function writeCache(rendered) {
     mkdirSync(SCHEMA_CACHE_DIR, { recursive: true });
     writeFileSync(CACHED_ACF_PATH, rendered.acfMarkdown);
     writeFileSync(CACHED_COLOR_PATH, rendered.colorMarkdown);
+    writeFileSync(CACHED_SKELETON_PATH, rendered.skeletonMarkdown);
     const meta = {
         fetched_at: new Date().toISOString(),
         module_count: rendered.module_count,
         field_count: rendered.field_count,
+        skeleton_count: rendered.skeleton_count,
     };
     writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
-    for (const p of [CACHED_ACF_PATH, CACHED_COLOR_PATH, META_PATH]) {
+    for (const p of [CACHED_ACF_PATH, CACHED_COLOR_PATH, CACHED_SKELETON_PATH, META_PATH]) {
         try { chmodSync(p, 0o600); } catch {}
     }
     return meta;
@@ -141,6 +152,7 @@ function bundled(source, error, meta = null) {
     return {
         acfPath: BUNDLED_ACF_PATH,
         colorPath: BUNDLED_COLOR_PATH,
+        skeletonPath: BUNDLED_SKELETON_PATH,
         source,
         verified: false,
         age_seconds: meta ? ageSeconds(meta) : null,
@@ -167,6 +179,7 @@ export async function loadSchemaBundle({ refresh = false, ttl = null, strict = f
         return {
             acfPath: CACHED_ACF_PATH,
             colorPath: CACHED_COLOR_PATH,
+            skeletonPath: CACHED_SKELETON_PATH,
             source: 'cache',
             verified: true,
             age_seconds: age,
@@ -183,6 +196,7 @@ export async function loadSchemaBundle({ refresh = false, ttl = null, strict = f
         return {
             acfPath: CACHED_ACF_PATH,
             colorPath: CACHED_COLOR_PATH,
+            skeletonPath: CACHED_SKELETON_PATH,
             source: 'fresh',
             verified: true,
             age_seconds: 0,
@@ -198,6 +212,7 @@ export async function loadSchemaBundle({ refresh = false, ttl = null, strict = f
             return {
                 acfPath: CACHED_ACF_PATH,
                 colorPath: CACHED_COLOR_PATH,
+                skeletonPath: CACHED_SKELETON_PATH,
                 source: 'stale-cache',
                 verified: false,
                 age_seconds: age,

@@ -31,8 +31,9 @@
  * skill must fall back to acf-schemas.md (and the validator will warn).
  *
  * Live ACF schema (added 2.3.0): the printed bundle also carries
- *   schema_paths  — absolute paths to the acf-schemas.md and color-system.md
- *                   the skill must read this run (live cache, or bundled).
+ *   schema_paths  — absolute paths to the acf-schemas.md, color-system.md and
+ *                   module-skeletons.md the skill must read this run (live
+ *                   cache, or bundled).
  *   schema        — {source, age_seconds, verified, module_count, field_count}
  * When `schema.verified` is false the field keys were not confirmed against
  * WordPress; the skill must say so and the publish script refuses to upload.
@@ -235,7 +236,7 @@ async function main() {
         registered_modules,
         registry,
         dropped_unregistered,
-        schema_paths: { acf_schemas: schemaBundle.acfPath, color_system: schemaBundle.colorPath },
+        schema_paths: { acf_schemas: schemaBundle.acfPath, color_system: schemaBundle.colorPath, module_skeletons: schemaBundle.skeletonPath },
         schema: {
             source: schemaBundle.source,
             age_seconds: schemaBundle.age_seconds,
