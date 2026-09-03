@@ -263,7 +263,7 @@ Verify the generated output against ALL previous steps:
 6. **Module sequence**: Does the page flow logically? Is ContactExtended near the end? Is every module in `registered_modules`?
 7. **Field completeness**: Every field declared in `acf-schemas.md` for the chosen module is present in `data`, with both `name` and `_name` (mapping) keys. Especially the design/layout fields (`background_color`, `text_color`, alignment selectors, `headline_tag_selector`, `first_item_open`).
 8. **JSON quote safety**: Every string value's content is JSON-parseable. No raw ASCII `"` inside strings unless escaped as `\"`. Mixed German `„`/ASCII `"` pairs are forbidden.
-9. **HTML escape**: Every `<` and `>` inside any string value is emitted as `<` / `>`. Verify by grep — no raw `<p>`, `<strong>`, `<ul>`, `<li>`, `</`, etc. should appear inside the JSON portion of any block.
+9. **HTML escape**: Every literal `<` and `>` inside any string value is emitted as the escaped sequences `\u003c` / `\u003e`. Verify by grep — no raw `<p>`, `<strong>`, `<ul>`, `<li>`, `</`, etc. should appear inside the JSON portion of any block.
 10. **Validator pass**: After assembling the markup, run the validator script and resolve every reported `severity: "error"` issue before delivery — including `unregistered_module`, which means the module does not exist on the live site and must be swapped, not worked around.
 
 ### Step 8: Output Formatting
